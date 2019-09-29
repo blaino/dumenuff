@@ -16,10 +16,25 @@ defmodule DumenuffEngine.Arena do
   end
 
   def init_rooms(arena) do
+    # TODO filter out bot on bot pairs
     player_list = Map.keys(arena.players)
     combos = Combinations.combinations(player_list, 2)
     rooms = Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
     put_in(arena.rooms, rooms)
+  end
+
+  # TODO consider sending in a Message as opposed to building it here
+  def post(arena, room, from, to, msg) do
+    update_in(arena, [Access.key(:rooms), Access.key(room), Access.key(:messages)],
+      &([Message.new(from, to, msg) | &1]))
+  end
+
+  def decide(arena, player, opponent, decision) do
+    case Decision.new(opponent, decision) do
+      {:ok, decision} ->
+        put_in(arena, [Access.key(:players), Access.key(player), Access.key(:decisions)], decision)
+      {:error, reason} -> {:error, :reason}
+    end
   end
 
   defp put_in_player(player, name, arena) do

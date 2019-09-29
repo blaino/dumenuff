@@ -15,6 +15,10 @@ defmodule DumenuffEngine.Rules do
     end
   end
 
+  def check(%Rules{state: :players_set} = rules, :init_rooms) do
+    {:ok, %Rules{rules | state: :game_started}}
+  end
+
   def check(_state, _action), do: :error
 
   defp all_players_set?(rules), do: rules.num_players == rules.players_to_start

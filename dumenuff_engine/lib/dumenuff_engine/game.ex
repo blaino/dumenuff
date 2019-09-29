@@ -32,6 +32,7 @@ defmodule DumenuffEngine.Game do
       state_data
       |> put_in_player(Player.new(ethnicity), name)
       |> update_rules(rules)
+      |> check_players_set
       |> reply_success(:ok)
       else
         :error -> {:reply, :error, state_data}
@@ -41,20 +42,6 @@ defmodule DumenuffEngine.Game do
 
 
 
-
-  def init_bots(game) do
-    # Enum.reduce(["thx-1138", "borg"], game,
-    Enum.reduce(bot_names(), game,
-      fn name, acc -> put_in_player(Player.new(:bot), name, acc) end)
-  end
-
-  def init_rooms(game) do
-    # TODO filter out bot on bot pairs
-    player_list = Map.keys(game.players)
-    combos = Combinations.combinations(player_list, 2)
-    rooms = Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
-    put_in(game.rooms, rooms)
-  end
 
   # TODO consider sending in a Message as opposed to building it here
   def post(game, room, from, to, msg) do
@@ -70,8 +57,29 @@ defmodule DumenuffEngine.Game do
     end
   end
 
+  defp check_players_set(game) do
+    case game.rules.state == :players_set do
+      true ->
+        game = game
+        |> init_bots
+        |> init_rooms
+      false ->
+        game
+    end
+  end
 
+  defp init_bots(game) do
+    Enum.reduce(bot_names(), game,
+      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
+  end
 
+  defp init_rooms(game) do
+    # TODO filter out bot on bot pairs
+    player_list = Map.keys(game.players)
+    combos = Combinations.combinations(player_list, 2)
+    rooms = Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
+    put_in(game.rooms, rooms)
+  end
 
   defp put_in_player(game, player, name) do
     put_in(game, [Access.key(:players), Access.key(name, %{})], player)

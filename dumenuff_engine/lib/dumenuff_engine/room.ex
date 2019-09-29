@@ -5,7 +5,7 @@ defmodule DumenuffEngine.Room do
   defstruct [:player1, :player2, :messages]
 
   def new(name1, name2) do
-    {:ok, %Room{player1: name1, player2: name2, messages: []}}
+    %Room{player1: name1, player2: name2, messages: []}
   end
 
 end

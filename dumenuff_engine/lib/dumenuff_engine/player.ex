@@ -7,7 +7,7 @@ defmodule DumenuffEngine.Player do
   @ethnicities [:bot, :human]
 
   def new(ethnicity) when ethnicity in @ethnicities do
-    {:ok, %Player{ethnicity: ethnicity, decisions: []}}
+    %Player{ethnicity: ethnicity, decisions: []}
   end
 
   def new(_ethnicity), do: {:error, :invalid_ethnicity}

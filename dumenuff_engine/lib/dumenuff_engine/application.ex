@@ -9,6 +9,7 @@ defmodule DumenuffEngine.Application do
     children = [
       # Starts a worker by calling: DumenuffEngine.Worker.start_link(arg)
       # {DumenuffEngine.Worker, arg}
+      {Registry, keys: :unique, name: Registry.Game}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

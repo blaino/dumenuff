@@ -1,7 +1,7 @@
 defmodule DumenuffEngine.Message do
   alias __MODULE__
 
-  @enforce_keys [:from, :to, :content, :timestamp]
+  @enforce_keys [:from, :to, :content]
   defstruct [:from, :to, :content, :timestamp]
 
   # TODO as a when

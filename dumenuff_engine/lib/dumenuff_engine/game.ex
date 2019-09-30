@@ -5,9 +5,11 @@ defmodule DumenuffEngine.Game do
 
   @ethnicities [:bot, :human]
   @timeout 60 * 60 * 24 * 1000
+  @bot_names ["thx1138", "zorgo"]
 
-  def bot_names(), do: ["thx1138", "zorgo"]
-
+  ########
+  # API
+  #
   def start_link(name) when is_binary(name) do
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
   end
@@ -21,7 +23,20 @@ defmodule DumenuffEngine.Game do
     GenServer.call(game, {:add_player, name, ethnicity})
   end
 
+  # TODO consider checking if room_name is in game.rooms
+  # TODO protect against message with from to not matching those in room
+  def post(game, room_name, %Message{} = message) when is_binary(room_name) do
+    GenServer.call(game, {:post, room_name, message})
+  end
 
+  # TODO protect against decision not matching players
+  def decide(game, player_name, %Decision{} = decision) when is_binary(player_name) do
+    GenServer.call(game, {:decide, player_name, decision})
+  end
+
+  ########
+  # Handlers
+  #
   def handle_info({:set_state, name}, state_data) do
     {:noreply, state_data, @timeout}
   end
@@ -39,23 +54,22 @@ defmodule DumenuffEngine.Game do
     end
   end
 
-
-
-
-
-  # TODO consider sending in a Message as opposed to building it here
-  def post(game, room, from, to, msg) do
-    update_in(game, [Access.key(:rooms), Access.key(room), Access.key(:messages)],
-      &([Message.new(from, to, msg) | &1]))
+  def handle_call({:post, room_name, message}, _from, state_data) do
+      state_data
+      |> update_in_messages(room_name, message)
+      |> reply_success(:ok)
   end
 
-  def decide(game, player, opponent, decision) do
-    case Decision.new(opponent, decision) do
-      {:ok, decision} ->
-        put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], decision)
-      {:error, reason} -> {:error, :reason}
-    end
+  def handle_call({:decide, player, decision}, _from, state_data) do
+    state_data
+    |> put_in_decision(player, decision)
+    |> reply_success(:ok)
   end
+
+  ########
+  # Private Helpers
+  #
+  defp bot_names(), do: @bot_names
 
   defp check_players_set(game) do
     case game.rules.state == :players_set do
@@ -83,6 +97,15 @@ defmodule DumenuffEngine.Game do
 
   defp put_in_player(game, player, name) do
     put_in(game, [Access.key(:players), Access.key(name, %{})], player)
+  end
+
+  defp update_in_messages(game, room, message) do
+    update_in(game, [Access.key(:rooms), Access.key(room), Access.key(:messages)],
+      &([message | &1]))
+  end
+
+  defp put_in_decision(game, player, decision) do
+    put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], decision)
   end
 
   defp via_tuple(name), do: {:via, Registry, {Registry.Game, name}}

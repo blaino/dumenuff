@@ -6,6 +6,8 @@ defmodule DumenuffEngine.Decision do
 
   @decisions [:bot, :human, :undecided]
 
+  def new(opponent_name, decision \\ :undecided)
+
   def new(opponent_name, decision) when decision in @decisions do
     {:ok, %Decision{opponent_name: opponent_name, decision: decision}}
   end

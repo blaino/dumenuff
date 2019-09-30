@@ -34,6 +34,10 @@ defmodule DumenuffEngine.Game do
     GenServer.call(game, {:decide, player_name, decision})
   end
 
+  def done(game, player_name) when is_binary(player_name) do
+    GenServer.call(game, {:done, player_name})
+  end
+
   ########
   # Handlers
   #
@@ -66,6 +70,18 @@ defmodule DumenuffEngine.Game do
     |> reply_success(:ok)
   end
 
+  def handle_call({:done, player_name}, _from, state_data) do
+    with {:ok, rules} <- Rules.check(state_data.rules, :done)
+      do
+      state_data
+      |> set_done(player_name)
+      |> update_rules(rules)
+      |> reply_success(:ok)
+      else
+        :error -> {:reply, :error, state_data}
+    end
+  end
+
   ########
   # Private Helpers
   #
@@ -77,6 +93,7 @@ defmodule DumenuffEngine.Game do
         game = game
         |> init_bots
         |> init_rooms
+        |> start_game
       false ->
         game
     end
@@ -95,6 +112,10 @@ defmodule DumenuffEngine.Game do
     put_in(game.rooms, rooms)
   end
 
+  defp start_game(game) do
+    update_rules(game, %Rules{game.rules | state: :game_started})
+  end
+
   defp put_in_player(game, player, name) do
     put_in(game, [Access.key(:players), Access.key(name, %{})], player)
   end
@@ -106,6 +127,10 @@ defmodule DumenuffEngine.Game do
 
   defp put_in_decision(game, player, decision) do
     put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], decision)
+  end
+
+  defp set_done(game, player) do
+    put_in(game, [Access.key(:players), Access.key(player), Access.key(:done)], true)
   end
 
   defp via_tuple(name), do: {:via, Registry, {Registry.Game, name}}

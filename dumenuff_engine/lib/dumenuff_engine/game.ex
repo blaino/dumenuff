@@ -4,7 +4,6 @@ defmodule DumenuffEngine.Game do
   alias DumenuffEngine.{Player, Decision, Room, Message, Combinations, Rules}
 
   @ethnicities [:bot, :human]
-  @timeout 60 * 60 * 24 * 1000
   @bot_names ["thx1138", "zorgo"]
 
   ########
@@ -42,7 +41,16 @@ defmodule DumenuffEngine.Game do
   # Handlers
   #
   def handle_info({:set_state, name}, state_data) do
-    {:noreply, state_data, @timeout}
+    {:noreply, state_data}
+  end
+
+  def handle_info(:time_change, state_data) do
+    {:ok, rules} = Rules.check(state_data.rules, :time_change)
+    state_data = update_rules(state_data, rules)
+    if state_data.rules.state != :game_over do
+      Process.send_after(self(), :time_change, 1000)
+    end
+    {:noreply, state_data}
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do
@@ -113,6 +121,7 @@ defmodule DumenuffEngine.Game do
   end
 
   defp start_game(game) do
+    Process.send_after(self(), :time_change, 1000)
     update_rules(game, %Rules{game.rules | state: :game_started})
   end
 
@@ -142,7 +151,7 @@ defmodule DumenuffEngine.Game do
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
   defp reply_success(state_data, reply) do
-    {:reply, reply, state_data, @timeout}
+    {:reply, reply, state_data}
   end
 
 

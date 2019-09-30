@@ -4,7 +4,8 @@ defmodule DumenuffEngine.Rules do
   defstruct state: :initialized,
     num_players: 0,
     players_to_start: 1,
-    num_done: 0
+    num_done: 0,
+    timer: 10
 
   def new(), do: %Rules{}
 
@@ -19,6 +20,14 @@ defmodule DumenuffEngine.Rules do
   def check(%Rules{state: :game_started} = rules, :done) do
     rules = Map.update!(rules, :num_done, &(&1 + 1))
     case all_players_done?(rules) do
+      true -> {:ok, %Rules{rules | state: :game_over}}
+      false -> {:ok, rules}
+    end
+  end
+
+  def check(%Rules{state: :game_started} = rules, :time_change) do
+    rules = Map.update!(rules, :timer, &(&1 - 1))
+    case rules.timer == 0 do
       true -> {:ok, %Rules{rules | state: :game_over}}
       false -> {:ok, rules}
     end

@@ -7,13 +7,11 @@ defmodule DumenuffEngine.Application do
 
   def start(_type, _args) do
     children = [
-      # Starts a worker by calling: DumenuffEngine.Worker.start_link(arg)
-      # {DumenuffEngine.Worker, arg}
-      {Registry, keys: :unique, name: Registry.Game}
+      {Registry, keys: :unique, name: Registry.Game},
+      DumenuffEngine.GameSupervisor
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    :ets.new(:game_state, [:public, :named_table])
     opts = [strategy: :one_for_one, name: DumenuffEngine.Supervisor]
     Supervisor.start_link(children, opts)
   end

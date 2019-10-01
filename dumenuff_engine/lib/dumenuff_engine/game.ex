@@ -5,10 +5,14 @@ defmodule DumenuffEngine.Game do
 
   @ethnicities [:bot, :human]
   @bot_names ["thx1138", "zorgo"]
+  @timeout 60 * 60 * 24 * 1000
 
   ########
   # API
   #
+
+  def via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
+
   def start_link(name) when is_binary(name) do
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
   end
@@ -40,8 +44,23 @@ defmodule DumenuffEngine.Game do
   ########
   # Handlers
   #
+  def handle_info(:timeout, state_data), do: {:stop, {:shutdown, :timeout}, state_data}
+
+  def terminate({:shutdown, :timeout}, state_data) do
+    :ets.delete(:game_state, state_data.player1.name)
+    :ok
+  end
+
+  def terminate(_reason, _state), do: :ok
+
   def handle_info({:set_state, name}, state_data) do
-    {:noreply, state_data}
+    state_data =
+    case :ets.lookup(:game_state, name) do
+      [] -> fresh_state(name)
+      [{_key, state}] -> state
+    end
+    :ets.insert(:game_state, {name, state_data})
+    {:noreply, state_data, @timeout}
   end
 
   def handle_info(:time_change, state_data) do
@@ -50,7 +69,7 @@ defmodule DumenuffEngine.Game do
     if state_data.rules.state != :game_over do
       Process.send_after(self(), :time_change, 1000)
     end
-    {:noreply, state_data}
+    {:noreply, state_data, @timeout}
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do
@@ -142,8 +161,6 @@ defmodule DumenuffEngine.Game do
     put_in(game, [Access.key(:players), Access.key(player), Access.key(:done)], true)
   end
 
-  defp via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
-
   defp fresh_state(name) do
     %{registered_name: name, players: %{}, rooms: %{}, rules: %Rules{}}
   end
@@ -151,6 +168,7 @@ defmodule DumenuffEngine.Game do
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
 
   defp reply_success(state_data, reply) do
+    :ets.insert(:game_state, {state_data.registered_name, state_data})
     {:reply, reply, state_data}
   end
 

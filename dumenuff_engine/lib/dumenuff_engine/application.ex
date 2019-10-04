@@ -8,7 +8,11 @@ defmodule DumenuffEngine.Application do
   def start(_type, _args) do
     children = [
       {Registry, keys: :unique, name: Registry.Game},
-      DumenuffEngine.GameSupervisor
+      DumenuffEngine.GameSupervisor,
+      %{
+        id: Phoenix.PubSub.PG2,
+        start: {Phoenix.PubSub.PG2, :start_link, [:dumenuff, []]}
+      }
     ]
 
     :ets.new(:game_state, [:public, :named_table])

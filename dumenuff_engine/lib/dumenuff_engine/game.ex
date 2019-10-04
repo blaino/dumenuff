@@ -6,6 +6,8 @@ defmodule DumenuffEngine.Game do
   @ethnicities [:bot, :human]
   @bot_names ["thx1138", "zorgo"]
   @timeout 60 * 60 * 24 * 1000
+  @pubsub_name :dumenuff
+  @pubsub_topic "dumenuff_updates"
 
   ########
   # API
@@ -20,6 +22,10 @@ defmodule DumenuffEngine.Game do
   def init(name) do
     send(self(), {:set_state, name})
     {:ok, fresh_state(name)}
+  end
+
+  def get_state(game) do
+    GenServer.call(game, {:get_state})
   end
 
   def add_player(game, name, ethnicity) when is_binary(name) and ethnicity in @ethnicities do
@@ -69,7 +75,15 @@ defmodule DumenuffEngine.Game do
     if state_data.rules.state != :game_over do
       Process.send_after(self(), :time_change, 1000)
     end
+
+    # Publish game state every second
+    Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:tick, state_data})
+
     {:noreply, state_data, @timeout}
+  end
+
+  def handle_call({:get_state}, _from, state_data) do
+      reply_success(state_data, :ok)
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do
@@ -169,7 +183,9 @@ defmodule DumenuffEngine.Game do
 
   defp reply_success(state_data, reply) do
     :ets.insert(:game_state, {state_data.registered_name, state_data})
-    {:reply, reply, state_data}
+
+    # This is potentially a big change if there are lots of consumers
+    {:reply, {reply, state_data}, state_data}
   end
 
 

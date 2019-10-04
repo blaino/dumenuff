@@ -3,9 +3,9 @@ defmodule DumenuffEngine.Rules do
 
   defstruct state: :initialized,
     num_players: 0,
-    players_to_start: 1,
+    players_to_start: 2,
     num_done: 0,
-    timer: 100
+    timer: 1000
 
   def new(), do: %Rules{}
 

@@ -155,6 +155,7 @@ defmodule DumenuffEngine.Game do
 
   defp start_game(game) do
     Process.send_after(self(), :time_change, 1000)
+    Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:game_started})
     update_rules(game, %Rules{game.rules | state: :game_started})
   end
 

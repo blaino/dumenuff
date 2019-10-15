@@ -24,7 +24,7 @@
                 <ul class="decide">
                     <%= for room <- get_rooms(@game, @player_token) do %>
                         <li>
-                            <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" />
+                            <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= checked(room, @current_room) %> />
                             <label for="<%= room %>"><%= room %></label>
                         </li>
                     <%= end %>

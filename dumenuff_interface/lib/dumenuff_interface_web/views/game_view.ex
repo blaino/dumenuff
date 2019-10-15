@@ -15,4 +15,10 @@ defmodule DumenuffInterfaceWeb.GameView do
     end)
   end
 
+  def checked(room, current_room) do
+    if room == current_room do
+      "checked"
+    end
+  end
+
 end

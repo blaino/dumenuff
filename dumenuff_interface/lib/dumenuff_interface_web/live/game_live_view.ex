@@ -24,6 +24,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
       |> assign(:game, game_state)
       |> assign(:game_pid, game_pid)
       |> assign(:player_token, nil)
+      |> assign(:current_room, nil)
 
     Phoenix.PubSub.subscribe(:dumenuff, "dumenuff_updates")
 
@@ -35,6 +36,13 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     socket = assign(socket, :game, game_state)
 
     # IO.inspect(socket.assigns.player_token, label: "======================== socket.assigns")
+    {:noreply, socket}
+  end
+
+  def handle_info({:game_started}, %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
+    {:ok, game_state} = Game.get_state(game_pid)
+    rooms = DumenuffInterfaceWeb.GameView.get_rooms(game_state, player_token)
+    socket = assign(socket, :current_room, Enum.at(rooms, 0))
     {:noreply, socket}
   end
 

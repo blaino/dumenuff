@@ -5,4 +5,87 @@
 
 .game-pane {
     border: 1px solid red;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-pane {
+    border: 1px solid red;
+    flex: auto;
+
+
+    display: flex;
+}
+
+.bottom-pane {
+    border: 1px solid red;
+    flex: auto;
+
+
+    display: flex;
+}
+
+.top-left-pane {
+    border: 1px solid red;
+    flex: auto;
+    max-width: 13em;
+}
+
+.top-right-pane {
+    border: 1px solid red;
+    flex: auto;
+}
+
+.bottom-left-pane {
+    border: 1px solid red;
+    flex: auto;
+    max-width: 13em;
+}
+
+.bottom-right-pane {
+    border: 1px solid red;
+    flex: auto;
+}
+
+.decide {
+    list-style-type:none;
+    margin:25px 0 0 0;
+    padding:0;
+}
+
+.decide li {
+    float:left;
+    margin:0 5px 0 0;
+    width:100px;
+    height:40px;
+    position:relative;
+}
+
+.decide label, .decide input {
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
+
+.decide input[type="radio"] {
+    opacity:0.011;
+    z-index:100;
+}
+
+.decide input[type="radio"]:checked + label {
+    background:yellow;
+}
+
+.decide label {
+    padding:5px;
+    border:1px solid #CCC;
+    cursor:pointer;
+    z-index:90;
+}
+
+.decide label:hover {
+    background:#DDD;
 }

@@ -30,6 +30,14 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:ok, socket}
   end
 
+  def handle_info({:tick, game_state}, socket) do
+    # IO.inspect(game_state, label: "============================= handle info")
+    socket = assign(socket, :game, game_state)
+
+    # IO.inspect(socket.assigns.player_token, label: "======================== socket.assigns")
+    {:noreply, socket}
+  end
+
   def handle_event("add",
     %{"params" => %{"name" => name}},
     %{assigns: %{game_pid: game_pid}} = socket) do
@@ -44,11 +52,29 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
-  def handle_info({:tick, game_state}, socket) do
-    # IO.inspect(game_state, label: "============================= handle info")
+  def handle_event("done",
+    _params,
+    %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
+
+    {:ok, game_state} = Game.done(game_pid, player_token)
+
     socket = assign(socket, :game, game_state)
 
     {:noreply, socket}
   end
+
+  def handle_event("decide",
+    %{"decision" => decision},
+    %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
+
+    IO.inspect(decision, label: "******** decision")
+    # TODO Determine which room you are in so you can build a decision with
+    # the opponent's name
+    # {:ok, game_state} = Game.decide(game_pid, player_token, )
+    # socket = assign(socket, :game, game_state)
+
+    {:noreply, socket}
+  end
+
 
 end

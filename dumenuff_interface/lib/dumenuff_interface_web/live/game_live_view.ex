@@ -1,7 +1,7 @@
 defmodule DumenuffInterfaceWeb.GameLiveView do
   use Phoenix.LiveView
 
-  alias DumenuffEngine.{Game, GameSupervisor}
+  alias DumenuffEngine.{Game, GameSupervisor, Decision}
 
   def render(assigns) do
     Phoenix.View.render(DumenuffInterfaceWeb.GameView, "index.html", assigns)
@@ -63,16 +63,18 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
+  def handle_event("pick", %{"room" => room}, socket) do
+    socket = assign(socket, :current_room, room)
+    {:noreply, socket}
+  end
+
   def handle_event("decide",
     %{"decision" => decision},
-    %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
+    %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} = socket) do
 
-    IO.inspect(decision, label: "******** decision")
-    # TODO Determine which room you are in so you can build a decision with
-    # the opponent's name
-    # {:ok, game_state} = Game.decide(game_pid, player_token, )
-    # socket = assign(socket, :game, game_state)
-
+    {:ok, decision} = Decision.new(current_room, String.to_existing_atom(decision))
+    {:ok, game_state} = Game.decide(game_pid, player_token, decision)
+    socket = assign(socket, :game, game_state)
     {:noreply, socket}
   end
 

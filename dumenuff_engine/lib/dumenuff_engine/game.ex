@@ -168,7 +168,8 @@ defmodule DumenuffEngine.Game do
   end
 
   defp put_in_decision(game, player, decision) do
-    put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], decision)
+    {_, new_state} = get_and_update_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], &{&1, [decision | &1]})
+    new_state
   end
 
   defp set_done(game, player) do

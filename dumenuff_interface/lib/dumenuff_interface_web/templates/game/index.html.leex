@@ -21,9 +21,12 @@
     <div class="game-pane">
         <div class="top-pane">
             <div class="top-left-pane">
-                <ul>
+                <ul class="decide">
                     <%= for room <- get_rooms(@game, @player_token) do %>
-                        <li><%= room %></li>
+                        <li>
+                            <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" />
+                            <label for="<%= room %>"><%= room %></label>
+                        </li>
                     <%= end %>
                 </ul>
             </div>
@@ -49,6 +52,7 @@
                         <input type="radio" id="human" name="amount" checked="checked" phx-click="decide" phx-value-decision="human" />
                         <label for="human">human</label>
                     </li>
+                </ul>
             </div>
         </div>
     </div>

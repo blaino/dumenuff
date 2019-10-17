@@ -24,10 +24,10 @@
                 <ul class="decide">
                     <%= for room <- get_rooms(@game, @player_token) do %>
                         <li>
-                            <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= checked(room, @current_room) %> />
+                            <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= room_checked(room, @current_room) %> />
                             <label for="<%= room %>"><%= room %></label>
                         </li>
-                    <%= end %>
+                    <% end %>
                 </ul>
             </div>
             <div class="top-right-pane">
@@ -41,15 +41,15 @@
             <div class="bottom-right-pane">
                 <ul class="decide">
                     <li>
-                        <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bot" />
+                        <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bot" <%= decision_checked(@game, @player_token, @current_room, :bot) %> />
                         <label for="bot">bot</label>
                     </li>
                     <li>
-                        <input type="radio" id="undecided" name="amount" phx-click="decide" phx-value-decision="undecided" />
+                        <input type="radio" id="undecided" name="amount" phx-click="decide" phx-value-decision="undecided" <%= decision_checked(@game, @player_token, @current_room, :undecided) %> />
                         <label for="undecided">don't know</label>
                     </li>
                     <li>
-                        <input type="radio" id="human" name="amount" checked="checked" phx-click="decide" phx-value-decision="human" />
+                        <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="human" <%= decision_checked(@game, @player_token, @current_room, :human) %> />
                         <label for="human">human</label>
                     </li>
                 </ul>

@@ -134,6 +134,8 @@ defmodule DumenuffEngine.Game do
         game = game
         |> init_bots
         |> init_rooms
+        |> init_decisions
+        |> IO.inspect(label: "init_decisions output")
         |> start_game
       false ->
         game
@@ -151,6 +153,25 @@ defmodule DumenuffEngine.Game do
     combos = Combinations.combinations(player_list, 2)
     rooms = Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
     put_in(game.rooms, rooms)
+  end
+
+  defp init_decisions(game) do
+    player_list = Map.keys(game.players)
+    combos = Combinations.combinations(player_list, 2)
+
+    Enum.reduce(combos, game, fn combo, game ->
+      IO.inspect(combo, label: "combo")
+      player1 = Enum.at(combo, 0)
+      player2 = Enum.at(combo, 1)
+      game = init_decision(game, player1, player2)
+      init_decision(game, player2, player1)
+    end)
+  end
+
+  defp init_decision(game, player, opponent) do
+    {:ok, decision} = Decision.new(player, :undecided)
+    game = put_in_decision(game, opponent, decision)
+    game
   end
 
   defp start_game(game) do

@@ -1,7 +1,7 @@
 defmodule DumenuffInterfaceWeb.GameLiveView do
   use Phoenix.LiveView
 
-  alias DumenuffEngine.{Game, GameSupervisor, Decision}
+  alias DumenuffEngine.{Game, GameSupervisor, Decision, Message}
 
   def render(assigns) do
     Phoenix.View.render(DumenuffInterfaceWeb.GameView, "index.html", assigns)
@@ -25,6 +25,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
       |> assign(:game_pid, game_pid)
       |> assign(:player_token, nil)
       |> assign(:current_room, nil)
+      |> assign(:message, nil)
 
     Phoenix.PubSub.subscribe(:dumenuff, "dumenuff_updates")
 
@@ -84,6 +85,17 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:ok, game_state} = Game.decide(game_pid, player_token, decision)
     socket = assign(socket, :game, game_state)
     {:noreply, socket}
+  end
+
+  def handle_event("message", %{"message" => message_params}, %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} = socket) do
+
+    %{"content" => content, "from" => from, "to" => to} = message_params
+    {:ok, message} = Message.new(from, to, content)
+    room = player_token <> "_" <> current_room
+    {:ok, game_state} = Game.post(game_pid, room, message)
+
+    IO.inspect(game_state, label: "after post")
+    {:noreply, assign(socket, :game, game_state)}
   end
 
 

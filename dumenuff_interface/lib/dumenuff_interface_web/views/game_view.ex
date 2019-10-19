@@ -21,17 +21,8 @@ defmodule DumenuffInterfaceWeb.GameView do
     end
   end
 
-  # TODO: this thing is still busted
   def decision_checked(game_state, player, opponent, decision) do
     decisions = game_state.players[player].decisions
-
-    checked = Enum.filter(decisions, fn d ->
-      d.decision == decision && d.opponent_name == opponent
-    end)
-
-    if length(checked) != 0 do
-      "checked"
-    end
+    if decisions[opponent] == decision, do: "checked"
   end
-
 end

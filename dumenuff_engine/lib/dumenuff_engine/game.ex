@@ -107,7 +107,7 @@ defmodule DumenuffEngine.Game do
 
   def handle_call({:decide, player, decision}, _from, state_data) do
     state_data
-    |> put_in_decision(player, decision)
+    |> update_decision(player, decision)
     |> reply_success(:ok)
   end
 
@@ -135,7 +135,6 @@ defmodule DumenuffEngine.Game do
         |> init_bots
         |> init_rooms
         |> init_decisions
-        |> IO.inspect(label: "init_decisions output")
         |> start_game
       false ->
         game
@@ -160,7 +159,6 @@ defmodule DumenuffEngine.Game do
     combos = Combinations.combinations(player_list, 2)
 
     Enum.reduce(combos, game, fn combo, game ->
-      IO.inspect(combo, label: "combo")
       player1 = Enum.at(combo, 0)
       player2 = Enum.at(combo, 1)
       game = init_decision(game, player1, player2)
@@ -172,6 +170,27 @@ defmodule DumenuffEngine.Game do
     {:ok, decision} = Decision.new(player, :undecided)
     game = put_in_decision(game, opponent, decision)
     game
+  end
+
+  defp put_in_decision(game, player, decision) do
+    opponent = decision.opponent_name
+    decision = decision.decision
+    new_state = update_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], &(Map.put_new(&1, opponent, decision)))
+
+    new_state
+  end
+
+  defp update_decision(game, player, decision) do
+    IO.inspect(player)
+    IO.inspect(decision)
+
+    opponent = decision.opponent_name
+    decision = decision.decision
+    new_state = put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)], decision)
+
+    IO.inspect(new_state, label: "update_decision")
+
+    new_state
   end
 
   defp start_game(game) do
@@ -187,11 +206,6 @@ defmodule DumenuffEngine.Game do
   defp update_in_messages(game, room, message) do
     update_in(game, [Access.key(:rooms), Access.key(room), Access.key(:messages)],
       &([message | &1]))
-  end
-
-  defp put_in_decision(game, player, decision) do
-    {_, new_state} = get_and_update_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], &{&1, [decision | &1]})
-    new_state
   end
 
   defp set_done(game, player) do

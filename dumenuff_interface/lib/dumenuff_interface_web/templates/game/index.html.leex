@@ -31,6 +31,11 @@
                 </ul>
             </div>
             <div class="top-right-pane">
+                <%=for message <- messages(@game, @player_token, @current_room) do %>
+                    <p>
+                        <%= message.from %>: <%= message.content %>
+                    </p>
+                <% end %>
                 <div class="form-group">
                     <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
                         <%= text_input :message, :content, placeholder: "write your message here..." %>

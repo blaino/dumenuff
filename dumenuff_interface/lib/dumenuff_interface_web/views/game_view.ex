@@ -25,4 +25,11 @@ defmodule DumenuffInterfaceWeb.GameView do
     decisions = game_state.players[player].decisions
     if decisions[opponent] == decision, do: "checked"
   end
+
+  def messages(game_state, player, opponent) when is_nil(opponent), do: []
+
+  def messages(game_state, player, opponent) do
+    room = player <> "_" <> opponent
+    game_state.rooms[room].messages
+  end
 end

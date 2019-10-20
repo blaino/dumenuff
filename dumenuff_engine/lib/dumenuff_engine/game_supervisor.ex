@@ -19,5 +19,4 @@ defmodule DumenuffEngine.GameSupervisor do
     |> Game.via_tuple()
     |> GenServer.whereis()
   end
-
 end

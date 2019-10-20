@@ -7,5 +7,4 @@ defmodule DumenuffEngine.Room do
   def new(name1, name2) do
     %Room{player1: name1, player2: name2, messages: []}
   end
-
 end

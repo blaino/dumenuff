@@ -42,8 +42,10 @@ defmodule DumenuffInterfaceWeb do
 
       import DumenuffInterfaceWeb.ErrorHelpers
       import DumenuffInterfaceWeb.Gettext
+
       import Phoenix.LiveView,
         only: [live_render: 2, live_render: 3, live_link: 1, live_link: 2]
+
       alias DumenuffInterfaceWeb.Router.Helpers, as: Routes
     end
   end

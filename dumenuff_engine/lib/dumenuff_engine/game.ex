@@ -61,10 +61,11 @@ defmodule DumenuffEngine.Game do
 
   def handle_info({:set_state, name}, state_data) do
     state_data =
-    case :ets.lookup(:game_state, name) do
-      [] -> fresh_state(name)
-      [{_key, state}] -> state
-    end
+      case :ets.lookup(:game_state, name) do
+        [] -> fresh_state(name)
+        [{_key, state}] -> state
+      end
+
     :ets.insert(:game_state, {name, state_data})
     {:noreply, state_data, @timeout}
   end
@@ -72,6 +73,7 @@ defmodule DumenuffEngine.Game do
   def handle_info(:time_change, state_data) do
     {:ok, rules} = Rules.check(state_data.rules, :time_change)
     state_data = update_rules(state_data, rules)
+
     if state_data.rules.state != :game_over do
       Process.send_after(self(), :time_change, 1000)
     end
@@ -87,22 +89,21 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do
-    with {:ok, rules} <- Rules.check(state_data.rules, :add_player)
-      do
+    with {:ok, rules} <- Rules.check(state_data.rules, :add_player) do
       state_data
       |> put_in_player(Player.new(ethnicity), name)
       |> update_rules(rules)
       |> check_players_set
       |> reply_success(:ok)
-      else
-        :error -> {:reply, :error, state_data}
+    else
+      :error -> {:reply, :error, state_data}
     end
   end
 
   def handle_call({:post, room_name, message}, _from, state_data) do
-      state_data
-      |> update_in_messages(room_name, message)
-      |> reply_success(:ok)
+    state_data
+    |> update_in_messages(room_name, message)
+    |> reply_success(:ok)
   end
 
   def handle_call({:decide, player, decision}, _from, state_data) do
@@ -112,22 +113,23 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_call({:done, player_name}, _from, state_data) do
-    with {:ok, rules} <- Rules.check(state_data.rules, :done)
-      do
+    with {:ok, rules} <- Rules.check(state_data.rules, :done) do
       state_data
       |> set_done(player_name)
       |> update_rules(rules)
       |> reply_success(:ok)
-      else
-        :error -> {:reply, :error, state_data}
+    else
+      :error -> {:reply, :error, state_data}
     end
   end
 
   # TODO seems harder than it should be
   def room_by_players(state_data, p1, p2) do
-    rooms = Enum.filter(state_data.rooms, fn ({_room_name, r}) ->
-      (r.player1 == p1 and r.player2 == p2) or (r.player1 == p2 and r.player2 == p1)
-    end)
+    rooms =
+      Enum.filter(state_data.rooms, fn {_room_name, r} ->
+        (r.player1 == p1 and r.player2 == p2) or (r.player1 == p2 and r.player2 == p1)
+      end)
+
     {room_name, _room} = Enum.at(rooms, 0)
     room_name
   end
@@ -140,26 +142,30 @@ defmodule DumenuffEngine.Game do
   defp check_players_set(game) do
     case game.rules.state == :players_set do
       true ->
-        game = game
-        |> init_bots
-        |> init_rooms
-        |> init_decisions
-        |> start_game
+        game =
+          game
+          |> init_bots
+          |> init_rooms
+          |> init_decisions
+          |> start_game
+
       false ->
         game
     end
   end
 
   defp init_bots(game) do
-    Enum.reduce(bot_names(), game,
-      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
+    Enum.reduce(bot_names(), game, fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
   end
 
   defp init_rooms(game) do
     # TODO filter out bot on bot pairs
     player_list = Map.keys(game.players)
     combos = Combinations.combinations(player_list, 2)
-    rooms = Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
+
+    rooms =
+      Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
+
     put_in(game.rooms, rooms)
   end
 
@@ -184,7 +190,13 @@ defmodule DumenuffEngine.Game do
   defp put_in_decision(game, player, decision) do
     opponent = decision.opponent_name
     decision = decision.decision
-    new_state = update_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions)], &(Map.put_new(&1, opponent, decision)))
+
+    new_state =
+      update_in(
+        game,
+        [Access.key(:players), Access.key(player), Access.key(:decisions)],
+        &Map.put_new(&1, opponent, decision)
+      )
 
     new_state
   end
@@ -195,7 +207,13 @@ defmodule DumenuffEngine.Game do
 
     opponent = decision.opponent_name
     decision = decision.decision
-    new_state = put_in(game, [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)], decision)
+
+    new_state =
+      put_in(
+        game,
+        [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)],
+        decision
+      )
 
     IO.inspect(new_state, label: "update_decision")
 
@@ -213,8 +231,11 @@ defmodule DumenuffEngine.Game do
   end
 
   defp update_in_messages(game, room, message) do
-    update_in(game, [Access.key(:rooms), Access.key(room), Access.key(:messages)],
-      &([message | &1]))
+    update_in(
+      game,
+      [Access.key(:rooms), Access.key(room), Access.key(:messages)],
+      &[message | &1]
+    )
   end
 
   defp set_done(game, player) do
@@ -233,5 +254,4 @@ defmodule DumenuffEngine.Game do
     # This is potentially a big change if there are lots of consumers
     {:reply, {reply, state_data}, state_data}
   end
-
 end

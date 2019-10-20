@@ -13,6 +13,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
         {_, game_pid, _, _} ->
           {:ok, game_state} = Game.get_state(game_pid)
           {game_pid, game_state}
+
         nil ->
           {:ok, game_pid} = GameSupervisor.start_game("PlaceholderGame")
           {:ok, game_state} = Game.get_state(game_pid)
@@ -40,17 +41,21 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
-  def handle_info({:game_started}, %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
+  def handle_info(
+        {:game_started},
+        %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
+      ) do
     {:ok, game_state} = Game.get_state(game_pid)
     rooms = DumenuffInterfaceWeb.GameView.get_rooms(game_state, player_token)
     socket = assign(socket, :current_room, Enum.at(rooms, 0))
     {:noreply, socket}
   end
 
-  def handle_event("add",
-    %{"params" => %{"name" => name}},
-    %{assigns: %{game_pid: game_pid}} = socket) do
-
+  def handle_event(
+        "add",
+        %{"params" => %{"name" => name}},
+        %{assigns: %{game_pid: game_pid}} = socket
+      ) do
     {:ok, game_state} = Game.add_player(game_pid, name, :human)
 
     socket =
@@ -61,10 +66,11 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
-  def handle_event("done",
-    _params,
-    %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket) do
-
+  def handle_event(
+        "done",
+        _params,
+        %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
+      ) do
     {:ok, game_state} = Game.done(game_pid, player_token)
 
     socket = assign(socket, :game, game_state)
@@ -77,18 +83,24 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
-  def handle_event("decide",
-    %{"decision" => decision},
-    %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} = socket) do
-
+  def handle_event(
+        "decide",
+        %{"decision" => decision},
+        %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
+          socket
+      ) do
     {:ok, decision} = Decision.new(current_room, String.to_existing_atom(decision))
     {:ok, game_state} = Game.decide(game_pid, player_token, decision)
     socket = assign(socket, :game, game_state)
     {:noreply, socket}
   end
 
-  def handle_event("message", %{"message" => message_params}, %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} = socket) do
-
+  def handle_event(
+        "message",
+        %{"message" => message_params},
+        %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
+          socket
+      ) do
     %{"content" => content, "from" => from, "to" => to} = message_params
     {:ok, message} = Message.new(from, to, content)
 
@@ -99,6 +111,4 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     IO.inspect(game_state, label: "after post")
     {:noreply, assign(socket, :game, game_state)}
   end
-
-
 end

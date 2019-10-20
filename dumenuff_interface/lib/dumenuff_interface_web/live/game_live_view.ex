@@ -92,9 +92,9 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     %{"content" => content, "from" => from, "to" => to} = message_params
     {:ok, message} = Message.new(from, to, content)
 
-    # TODO: this has gotta go
-    room = player_token <> "_" <> current_room
-    {:ok, game_state} = Game.post(game_pid, room, message)
+    {:ok, game_state} = Game.get_state(game_pid)
+    room_name = Game.room_by_players(game_state, player_token, current_room)
+    {:ok, game_state} = Game.post(game_pid, room_name, message)
 
     IO.inspect(game_state, label: "after post")
     {:noreply, assign(socket, :game, game_state)}

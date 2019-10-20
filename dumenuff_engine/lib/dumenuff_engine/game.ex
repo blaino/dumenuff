@@ -83,7 +83,7 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_call({:get_state}, _from, state_data) do
-      reply_success(state_data, :ok)
+    reply_success(state_data, :ok)
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do

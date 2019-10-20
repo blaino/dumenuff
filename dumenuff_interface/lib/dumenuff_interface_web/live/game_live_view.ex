@@ -91,6 +91,8 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     %{"content" => content, "from" => from, "to" => to} = message_params
     {:ok, message} = Message.new(from, to, content)
+
+    # TODO: this has gotta go
     room = player_token <> "_" <> current_room
     {:ok, game_state} = Game.post(game_pid, room, message)
 

@@ -1,6 +1,8 @@
 defmodule DumenuffInterfaceWeb.GameView do
   use DumenuffInterfaceWeb, :view
 
+  alias DumenuffEngine.Game
+
   def get_rooms(state, player_token) do
     player_rooms = Enum.filter(state.rooms, fn {_k, v} ->
       v.player1 == player_token || v.player2 == player_token
@@ -21,15 +23,17 @@ defmodule DumenuffInterfaceWeb.GameView do
     end
   end
 
+  def decision_checked(game_state, player, opponent, decision) when is_nil(player) or is_nil(opponent), do: nil
+
   def decision_checked(game_state, player, opponent, decision) do
     decisions = game_state.players[player].decisions
     if decisions[opponent] == decision, do: "checked"
   end
 
-  def messages(game_state, player, opponent) when is_nil(opponent), do: []
+  def messages(game_state, player, opponent) when is_nil(player) or is_nil(opponent), do: []
 
   def messages(game_state, player, opponent) do
-    room = player <> "_" <> opponent
-    game_state.rooms[room].messages
+    room_name = Game.room_by_players(game_state, player, opponent)
+    game_state.rooms[room_name].messages
   end
 end

@@ -123,6 +123,15 @@ defmodule DumenuffEngine.Game do
     end
   end
 
+  # TODO seems harder than it should be
+  def room_by_players(state_data, p1, p2) do
+    rooms = Enum.filter(state_data.rooms, fn ({_room_name, r}) ->
+      (r.player1 == p1 and r.player2 == p2) or (r.player1 == p2 and r.player2 == p1)
+    end)
+    {room_name, _room} = Enum.at(rooms, 0)
+    room_name
+  end
+
   ########
   # Private Helpers
   #
@@ -224,6 +233,5 @@ defmodule DumenuffEngine.Game do
     # This is potentially a big change if there are lots of consumers
     {:reply, {reply, state_data}, state_data}
   end
-
 
 end

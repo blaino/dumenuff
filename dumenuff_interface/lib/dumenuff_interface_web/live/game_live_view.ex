@@ -107,8 +107,22 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:ok, game_state} = Game.get_state(game_pid)
     room_name = Game.room_by_players(game_state, player_token, current_room)
     {:ok, game_state} = Game.post(game_pid, room_name, message)
+    # IO.inspect(game_state, label: "after post")
 
-    IO.inspect(game_state, label: "after post")
+    if game_state.players[to].ethnicity == :bot do
+      send(self(), {:reply, room_name, message})
+    end
+
+    {:noreply, assign(socket, :game, game_state)}
+  end
+
+  def handle_info({:reply, room_name, human_message}, %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket) do
+    {:ok, reply} = NodeJS.call("index", [human_message.content])
+    IO.inspect(reply, label: "handle_info reply")
+
+    {:ok, bot_message} = Message.new(human_message.to, human_message.from, reply)
+    {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
+
     {:noreply, assign(socket, :game, game_state)}
   end
 end

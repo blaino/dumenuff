@@ -41,7 +41,8 @@ defmodule DumenuffInterface.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:phoenix_live_view, "~> 0.3.0"},
       {:floki, ">= 0.0.0", only: :test},
-      {:dumenuff_engine, path: "../dumenuff_engine"}
+      {:dumenuff_engine, path: "../dumenuff_engine"},
+      {:nodejs, "~> 1.0"}
     ]
   end
 end

@@ -9,9 +9,18 @@ defmodule DumenuffInterface.Application do
     # List all child processes to be supervised
     children = [
       # Start the endpoint when the application starts
-      DumenuffInterfaceWeb.Endpoint
+      DumenuffInterfaceWeb.Endpoint,
       # Starts a worker by calling: DumenuffInterface.Worker.start_link(arg)
       # {DumenuffInterface.Worker, arg},
+      %{
+        id: NodeJS,
+        start: {
+          NodeJS,
+          :start_link,
+          [[path: "/Users/blainenelson/projects/elixir/dumenuff/dumenuff_bots", pool_size: 4]]
+        }
+      }
+
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

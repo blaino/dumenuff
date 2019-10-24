@@ -1,6 +1,6 @@
 <div><%= @player_token %></div>
 <%= if @player_token == nil do %>
-    <h1>Wanna play?</h1>
+    <h4>Wanna play?</h4>
     <p>Enter your gamer name</p>
     <p>
         <form action="#" phx-submit="add">
@@ -14,8 +14,8 @@
 <% end  %>
 <%= if @game.rules.state == :game_started do %>
     <div>
-        <h1>Game Name: <%= @game.registered_name %></h1>
-        <h1>Timer: <%= @game.rules.timer %></h1>
+        <h5>Game Name: <%= @game.registered_name %></h5>
+        <h5>Timer: <%= @game.rules.timer %></h5>
     </div>
 
     <div class="game-pane">

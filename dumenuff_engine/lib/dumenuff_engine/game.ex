@@ -223,6 +223,7 @@ defmodule DumenuffEngine.Game do
   defp start_game(game) do
     Process.send_after(self(), :time_change, 1000)
     Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:game_started})
+    greet(game)
     update_rules(game, %Rules{game.rules | state: :game_started})
   end
 
@@ -253,5 +254,22 @@ defmodule DumenuffEngine.Game do
 
     # This is potentially a big change if there are lots of consumers
     {:reply, {reply, state_data}, state_data}
+  end
+
+  defp greet(game) do
+    Enum.each(game.rooms, fn {room_name, room} ->
+      cond do
+        # game.players[room.player1].ethnicity == :bot and game.players[room.player2].ethnicity == :human ->
+        #   {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
+        #   IO.inspect(message, label: "message 1")
+        #   Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:reply, room_name, message})
+
+        game.players[room.player1].ethnicity == :human and game.players[room.player2].ethnicity == :bot ->
+          {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
+          Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
+          IO.inspect(message, label: "message 2")
+        true -> "blah"
+      end
+    end)
   end
 end

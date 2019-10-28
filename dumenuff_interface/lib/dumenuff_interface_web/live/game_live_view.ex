@@ -34,10 +34,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info({:tick, game_state}, socket) do
-    # IO.inspect(game_state, label: "============================= handle info")
     socket = assign(socket, :game, game_state)
-
-    # IO.inspect(socket.assigns.player_token, label: "======================== socket.assigns")
     {:noreply, socket}
   end
 
@@ -104,22 +101,26 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     %{"content" => content, "from" => from, "to" => to} = message_params
     {:ok, message} = Message.new(from, to, content)
 
+    IO.inspect(message, label: "++++++++++++++++ handle_event message")
+
     {:ok, game_state} = Game.get_state(game_pid)
     room_name = Game.room_by_players(game_state, player_token, current_room)
     {:ok, game_state} = Game.post(game_pid, room_name, message)
     # IO.inspect(game_state, label: "after post")
 
     if game_state.players[to].ethnicity == :bot do
-      send(self(), {:reply, room_name, message})
+      send(self(), {:bot_reply, room_name, message})
     end
 
     {:noreply, assign(socket, :game, game_state)}
   end
 
   def handle_info(
-        {:reply, room_name, human_message},
+        {:bot_reply, room_name, human_message},
         %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket
       ) do
+
+    IO.inspect(human_message, label: "human_message")
     {:ok, reply} = NodeJS.call("index", [human_message.content])
     IO.inspect(reply, label: "handle_info reply")
 
@@ -128,4 +129,5 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     {:noreply, assign(socket, :game, game_state)}
   end
+
 end

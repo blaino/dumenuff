@@ -116,7 +116,10 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, assign(socket, :game, game_state)}
   end
 
-  def handle_info({:reply, room_name, human_message}, %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket) do
+  def handle_info(
+        {:reply, room_name, human_message},
+        %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket
+      ) do
     {:ok, reply} = NodeJS.call("index", [human_message.content])
     IO.inspect(reply, label: "handle_info reply")
 

@@ -20,7 +20,6 @@ defmodule DumenuffInterface.Application do
           [[path: "/Users/blainenelson/projects/elixir/dumenuff/dumenuff_bots", pool_size: 4]]
         }
       }
-
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

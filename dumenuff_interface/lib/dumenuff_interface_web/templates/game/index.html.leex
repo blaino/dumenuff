@@ -21,7 +21,7 @@
     <div class="game-pane">
         <div class="top-pane">
             <div class="top-left-pane">
-                <ul class="decide">
+                <ul class="room">
                     <%= for room <- get_rooms(@game, @player_token) do %>
                         <li>
                             <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= room_checked(room, @current_room) %> />
@@ -41,14 +41,13 @@
                         <%= text_input :message, :content, placeholder: "write your message here..." %>
                         <%= hidden_input :message, :from, value: @player_token  %>
                         <%= hidden_input :message, :to, value: @current_room  %>
-                        <%= submit "submit" %>
                     <% end %>
                 </div>
             </div>
         </div>
         <div class="bottom-pane">
             <div class="bottom-left-pane">
-                <button phx-click="done">DONE</button>
+                <button class="waves-effect waves-light btn-large red" phx-click="done">DONE</button>
             </div>
             <div class="bottom-right-pane">
                 <ul class="decide">
@@ -58,7 +57,7 @@
                     </li>
                     <li>
                         <input type="radio" id="undecided" name="amount" phx-click="decide" phx-value-decision="undecided" <%= decision_checked(@game, @player_token, @current_room, :undecided) %> />
-                        <label for="undecided">don't know</label>
+                        <label for="undecided">idk</label>
                     </li>
                     <li>
                         <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="human" <%= decision_checked(@game, @player_token, @current_room, :human) %> />

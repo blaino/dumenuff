@@ -116,6 +116,7 @@ defmodule DumenuffEngine.Game do
     with {:ok, rules} <- Rules.check(state_data.rules, :done) do
       state_data
       |> set_done(player_name)
+      |> set_bonus(player_name)
       |> update_rules(rules)
       |> reply_success(:ok)
     else
@@ -259,6 +260,13 @@ defmodule DumenuffEngine.Game do
 
   defp set_done(game, player) do
     put_in(game, [Access.key(:players), Access.key(player), Access.key(:done)], true)
+  end
+
+  defp set_bonus(game, player) do
+    put_in(
+      game,
+      [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(:bonus)],
+      game.rules.num_players - game.rules.num_done - 1) # don't know why need -1
   end
 
   defp fresh_state(name) do

@@ -176,8 +176,11 @@ defmodule DumenuffEngine.Game do
     Enum.reduce(combos, game, fn combo, game ->
       player1 = Enum.at(combo, 0)
       player2 = Enum.at(combo, 1)
-      game = init_decision(game, player1, player2)
-      init_decision(game, player2, player1)
+      game
+      |> init_decision(player1, player2)
+      |> init_decision(player2, player1)
+      |> init_score(player1, player2)
+      |> init_score(player2, player1)
     end)
   end
 
@@ -196,6 +199,17 @@ defmodule DumenuffEngine.Game do
         game,
         [Access.key(:players), Access.key(player), Access.key(:decisions)],
         &Map.put_new(&1, opponent, decision)
+      )
+
+    new_state
+  end
+
+  defp init_score(game, player, opponent) do
+    new_state =
+      update_in(
+        game,
+        [Access.key(:players), Access.key(player), Access.key(:scores)],
+        &Map.put_new(&1, opponent, 0)
       )
 
     new_state

@@ -181,6 +181,7 @@ defmodule DumenuffEngine.Game do
       |> init_decision(player2, player1)
       |> init_score(player1, player2)
       |> init_score(player2, player1)
+      |> init_bonus
     end)
   end
 
@@ -205,6 +206,17 @@ defmodule DumenuffEngine.Game do
       [Access.key(:players), Access.key(player), Access.key(:scores)],
       &Map.put_new(&1, opponent, 0)
     )
+  end
+
+  defp init_bonus(game) do
+    player_list = Map.keys(game.players)
+    Enum.reduce(player_list, game, fn player, game ->
+      update_in(
+        game,
+        [Access.key(:players), Access.key(player), Access.key(:scores)],
+        &Map.put_new(&1, :bonus, 0)
+      )
+    end)
   end
 
   defp update_decision(game, player, decision) do

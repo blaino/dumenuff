@@ -71,11 +71,13 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_info(:time_change, state_data) do
-    {:ok, rules} = Rules.check(state_data.rules, :time_change)
-    state_data = update_rules(state_data, rules)
-
     if state_data.rules.state != :game_over do
+      {:ok, rules} = Rules.check(state_data.rules, :time_change)
+      state_data = update_rules(state_data, rules)
       Process.send_after(self(), :time_change, 1000)
+    else
+      state_data = calc_scores(state_data)
+      IO.inspect(state_data, label: "state_data after :game_over")
     end
 
     # Publish game state every second
@@ -298,4 +300,30 @@ defmodule DumenuffEngine.Game do
       end
     end)
   end
+
+  defp calc_scores(game) do
+    # reduce across human players
+    Enum.reduce(game.players, game, fn {player_name, player}, game ->
+      decisions = player.decisions
+      # reduce across that human player's decisions
+      Enum.reduce(decisions, game, fn decision, game ->
+        {opponent, guess} = decision
+        opponent_ethnicity = game.players[opponent].ethnicity
+        new_state = put_in(
+          game,
+          [Access.key(:players), Access.key(player_name), Access.key(:scores), Access.key(opponent)],
+          score(guess, opponent_ethnicity))
+        new_state
+      end)
+    end)
+  end
+
+  defp score(guess, opponent_ethnicity) do
+    cond do
+      guess == :undecided -> 0
+      guess == opponent_ethnicity -> 1
+      guess != opponent_ethnicity -> -1
+    end
+  end
+
 end

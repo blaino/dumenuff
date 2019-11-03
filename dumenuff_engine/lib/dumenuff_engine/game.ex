@@ -186,33 +186,25 @@ defmodule DumenuffEngine.Game do
 
   defp init_decision(game, player, opponent) do
     {:ok, decision} = Decision.new(player, :undecided)
-    game = put_in_decision(game, opponent, decision)
-    game
+    put_in_decision(game, opponent, decision)
   end
 
   defp put_in_decision(game, player, decision) do
     opponent = decision.opponent_name
     decision = decision.decision
-
-    new_state =
-      update_in(
-        game,
-        [Access.key(:players), Access.key(player), Access.key(:decisions)],
-        &Map.put_new(&1, opponent, decision)
-      )
-
-    new_state
+    update_in(
+      game,
+      [Access.key(:players), Access.key(player), Access.key(:decisions)],
+      &Map.put_new(&1, opponent, decision)
+    )
   end
 
   defp init_score(game, player, opponent) do
-    new_state =
-      update_in(
-        game,
-        [Access.key(:players), Access.key(player), Access.key(:scores)],
-        &Map.put_new(&1, opponent, 0)
-      )
-
-    new_state
+    update_in(
+      game,
+      [Access.key(:players), Access.key(player), Access.key(:scores)],
+      &Map.put_new(&1, opponent, 0)
+    )
   end
 
   defp update_decision(game, player, decision) do

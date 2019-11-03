@@ -46,6 +46,7 @@ input {
 .top-right-pane {
     border: 1px solid red;
     flex: auto;
+    padding: 1em;
 }
 
 .bottom-left-pane {

@@ -12,7 +12,7 @@
   </head>
   <body>
     <header>
-      <section class="container">
+      <section class="container" style="display: flex;">
         <h3>D U M E N U F F</h3>
       </section>
     </header>

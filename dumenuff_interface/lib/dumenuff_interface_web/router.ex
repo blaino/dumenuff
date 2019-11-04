@@ -20,6 +20,7 @@ defmodule DumenuffInterfaceWeb.Router do
     pipe_through :browser
 
     get "/", WelcomeController, :index
+    get "/scores", ScoresController, :index
   end
 
   # Other scopes may use custom stacks.

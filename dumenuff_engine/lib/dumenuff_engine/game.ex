@@ -75,9 +75,6 @@ defmodule DumenuffEngine.Game do
       {:ok, rules} = Rules.check(state_data.rules, :time_change)
       state_data = update_rules(state_data, rules)
       Process.send_after(self(), :time_change, 1000)
-    else
-      state_data = calc_scores(state_data)
-      IO.inspect(state_data, label: "state_data after :game_over")
     end
 
     # Publish game state every second
@@ -111,6 +108,7 @@ defmodule DumenuffEngine.Game do
   def handle_call({:decide, player, decision}, _from, state_data) do
     state_data
     |> update_decision(player, decision)
+    |> update_score(player, decision)
     |> reply_success(:ok)
   end
 
@@ -223,22 +221,25 @@ defmodule DumenuffEngine.Game do
   end
 
   defp update_decision(game, player, decision) do
-    IO.inspect(player)
-    IO.inspect(decision)
-
     opponent = decision.opponent_name
     decision = decision.decision
 
-    new_state =
-      put_in(
-        game,
-        [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)],
-        decision
-      )
+    put_in(
+      game,
+      [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)],
+      decision
+    )
+  end
 
-    IO.inspect(new_state, label: "update_decision")
-
-    new_state
+  defp update_score(game, player, decision) do
+    opponent = decision.opponent_name
+    guess = decision.decision
+    opponent_ethnicity = game.players[opponent].ethnicity
+    put_in(
+      game,
+      [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(opponent)],
+      score(guess, opponent_ethnicity)
+    )
   end
 
   defp start_game(game) do
@@ -298,23 +299,6 @@ defmodule DumenuffEngine.Game do
           IO.inspect(message, label: "message 2")
         true -> "blah"
       end
-    end)
-  end
-
-  defp calc_scores(game) do
-    # reduce across human players
-    Enum.reduce(game.players, game, fn {player_name, player}, game ->
-      decisions = player.decisions
-      # reduce across that human player's decisions
-      Enum.reduce(decisions, game, fn decision, game ->
-        {opponent, guess} = decision
-        opponent_ethnicity = game.players[opponent].ethnicity
-        new_state = put_in(
-          game,
-          [Access.key(:players), Access.key(player_name), Access.key(:scores), Access.key(opponent)],
-          score(guess, opponent_ethnicity))
-        new_state
-      end)
     end)
   end
 

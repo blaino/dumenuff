@@ -4,7 +4,6 @@ defmodule DumenuffEngine.Game do
   alias DumenuffEngine.{Player, Decision, Room, Message, Combinations, Rules}
 
   @ethnicities [:bot, :human]
-  @bot_names ["thx1138", "zorgo"]
   @timeout 60 * 60 * 24 * 1000
   @pubsub_name :dumenuff
   @pubsub_topic "dumenuff_updates"
@@ -138,7 +137,13 @@ defmodule DumenuffEngine.Game do
   ########
   # Private Helpers
   #
-  defp bot_names(), do: @bot_names
+
+  def bot_names(n) do
+    file = Path.expand("../names.txt")
+    File.stream!(file)
+    |> Enum.map(&String.trim/1)
+    |> Enum.take_random(n)
+  end
 
   defp check_players_set(game) do
     case game.rules.state == :players_set do
@@ -156,7 +161,11 @@ defmodule DumenuffEngine.Game do
   end
 
   defp init_bots(game) do
-    Enum.reduce(bot_names(), game, fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
+    n_bots = game.rules.players_to_start
+    Enum.reduce(
+      bot_names(n_bots),
+      game,
+      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
   end
 
   defp init_rooms(game) do

@@ -70,9 +70,10 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_info(:time_change, state_data) do
+    {:ok, rules} = Rules.check(state_data.rules, :time_change)
+    state_data = update_rules(state_data, rules)
+
     if state_data.rules.state != :game_over do
-      {:ok, rules} = Rules.check(state_data.rules, :time_change)
-      state_data = update_rules(state_data, rules)
       Process.send_after(self(), :time_change, 1000)
     end
 

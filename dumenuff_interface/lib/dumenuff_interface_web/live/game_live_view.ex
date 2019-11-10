@@ -48,6 +48,31 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
+  def handle_info(
+        {:bot_reply, room_name, human_message},
+        %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket
+      ) do
+
+    IO.inspect(human_message, label: "human_message")
+    {:ok, reply} = NodeJS.call("index", [human_message.content])
+    IO.inspect(reply, label: "handle_info reply")
+
+    charCount = String.length(reply)
+    delay = 120 * charCount + :rand.uniform(3000)
+    {:ok, bot_message} = Message.new(human_message.to, human_message.from, reply)
+
+    Process.send_after(self(), {:bot_reply_delay, room_name, bot_message}, 5000)
+
+    {:noreply, socket}
+  end
+
+  def handle_info(
+    {:bot_reply_delay, room_name, bot_message},
+    %{assigns: %{game_pid: game_pid}} = socket) do
+    {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
+    {:noreply, assign(socket, :game, game_state)}
+  end
+
   def handle_event(
         "add",
         %{"params" => %{"name" => name}},
@@ -111,21 +136,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     if game_state.players[to].ethnicity == :bot do
       send(self(), {:bot_reply, room_name, message})
     end
-
-    {:noreply, assign(socket, :game, game_state)}
-  end
-
-  def handle_info(
-        {:bot_reply, room_name, human_message},
-        %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket
-      ) do
-
-    IO.inspect(human_message, label: "human_message")
-    {:ok, reply} = NodeJS.call("index", [human_message.content])
-    IO.inspect(reply, label: "handle_info reply")
-
-    {:ok, bot_message} = Message.new(human_message.to, human_message.from, reply)
-    {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
 
     {:noreply, assign(socket, :game, game_state)}
   end

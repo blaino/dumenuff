@@ -297,18 +297,13 @@ defmodule DumenuffEngine.Game do
 
   defp greet(game) do
     Enum.each(game.rooms, fn {room_name, room} ->
-      IO.inspect(room_name, label: "greet")
-      IO.inspect(room.player1, label: "room.player1")
-      IO.inspect(room.player2, label: "room.player2")
       cond do
         game.players[room.player1].ethnicity == :bot and game.players[room.player2].ethnicity == :human ->
           {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
-          IO.inspect(message, label: "message 1")
           Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
 
         game.players[room.player1].ethnicity == :human and game.players[room.player2].ethnicity == :bot ->
           {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
-          IO.inspect(message, label: "message 2")
           Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
         true -> "blah"
       end

@@ -48,21 +48,23 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
+  # when: only send the reply to the right human
   def handle_info(
-        {:bot_reply, room_name, human_message},
-        %{assigns: %{game_pid: game_pid, current_room: current_room}} = socket
-      ) do
-
-    IO.inspect(human_message, label: "human_message")
+    {:bot_reply, room_name, %{from: from} = human_message},
+    %{assigns: %{player_token: player_token}} = socket)
+  when player_token == from do
     {:ok, reply} = NodeJS.call("index", [human_message.content])
-    IO.inspect(reply, label: "handle_info :bot_reply")
 
     charCount = String.length(reply)
     delay = 120 * charCount + :rand.uniform(3000)
     {:ok, bot_message} = Message.new(human_message.to, human_message.from, reply)
 
-    Process.send_after(self(), {:bot_reply_delay, room_name, bot_message}, 5000)
+    Process.send_after(self(), {:bot_reply_delay, room_name, bot_message}, delay)
 
+    {:noreply, socket}
+  end
+
+  def handle_info({:bot_reply, _room_name, _human_message}, socket) do
     {:noreply, socket}
   end
 
@@ -126,12 +128,9 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     %{"content" => content, "from" => from, "to" => to} = message_params
     {:ok, message} = Message.new(from, to, content)
 
-    IO.inspect(message, label: "++++++++++++++++ handle_event message")
-
     {:ok, game_state} = Game.get_state(game_pid)
     room_name = Game.room_by_players(game_state, player_token, current_room)
     {:ok, game_state} = Game.post(game_pid, room_name, message)
-    # IO.inspect(game_state, label: "after post")
 
     if game_state.players[to].ethnicity == :bot do
       send(self(), {:bot_reply, room_name, message})

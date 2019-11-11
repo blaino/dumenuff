@@ -21,8 +21,8 @@ input {
     border: 1px solid red;
     flex: auto;
 
-
     display: flex;
+    height: 30em;
 }
 
 .bottom-pane {

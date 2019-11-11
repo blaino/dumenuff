@@ -42,7 +42,8 @@ defmodule DumenuffInterface.MixProject do
       {:phoenix_live_view, "~> 0.3.0"},
       {:floki, ">= 0.0.0", only: :test},
       {:dumenuff_engine, path: "../dumenuff_engine"},
-      {:nodejs, "~> 1.0"}
+      {:nodejs, "~> 1.0"},
+      {:wallaby, "~> 0.23.0", [runtime: false, only: :test]}
     ]
   end
 end

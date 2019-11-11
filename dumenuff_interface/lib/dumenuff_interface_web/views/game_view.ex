@@ -37,6 +37,6 @@ defmodule DumenuffInterfaceWeb.GameView do
 
   def messages(game_state, player, opponent) do
     room_name = Game.room_by_players(game_state, player, opponent)
-    game_state.rooms[room_name].messages
+    Enum.reverse(game_state.rooms[room_name].messages)
   end
 end

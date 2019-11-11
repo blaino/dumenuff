@@ -55,7 +55,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     IO.inspect(human_message, label: "human_message")
     {:ok, reply} = NodeJS.call("index", [human_message.content])
-    IO.inspect(reply, label: "handle_info reply")
+    IO.inspect(reply, label: "handle_info :bot_reply")
 
     charCount = String.length(reply)
     delay = 120 * charCount + :rand.uniform(3000)

@@ -18,3 +18,6 @@ config :wallaby,
   chrome: [
     headless: true
   ]
+
+config :wallaby,
+  hackney_options: [timeout: :infinity, recv_timeout: :infinity]

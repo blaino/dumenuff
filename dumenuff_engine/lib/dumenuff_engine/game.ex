@@ -141,6 +141,7 @@ defmodule DumenuffEngine.Game do
 
   def bot_names(n) do
     file = Path.expand("../names.txt")
+
     File.stream!(file)
     |> Enum.map(&String.trim/1)
     |> Enum.take_random(n)
@@ -163,10 +164,12 @@ defmodule DumenuffEngine.Game do
 
   defp init_bots(game) do
     n_bots = game.rules.players_to_start
+
     Enum.reduce(
       bot_names(n_bots),
       game,
-      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end)
+      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end
+    )
   end
 
   defp init_rooms(game) do
@@ -187,6 +190,7 @@ defmodule DumenuffEngine.Game do
     Enum.reduce(combos, game, fn combo, game ->
       player1 = Enum.at(combo, 0)
       player2 = Enum.at(combo, 1)
+
       game
       |> init_decision(player1, player2)
       |> init_decision(player2, player1)
@@ -204,6 +208,7 @@ defmodule DumenuffEngine.Game do
   defp put_in_decision(game, player, decision) do
     opponent = decision.opponent_name
     decision = decision.decision
+
     update_in(
       game,
       [Access.key(:players), Access.key(player), Access.key(:decisions)],
@@ -221,6 +226,7 @@ defmodule DumenuffEngine.Game do
 
   defp init_bonus(game) do
     player_list = Map.keys(game.players)
+
     Enum.reduce(player_list, game, fn player, game ->
       update_in(
         game,
@@ -245,6 +251,7 @@ defmodule DumenuffEngine.Game do
     opponent = decision.opponent_name
     guess = decision.decision
     opponent_ethnicity = game.players[opponent].ethnicity
+
     put_in(
       game,
       [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(opponent)],
@@ -279,7 +286,9 @@ defmodule DumenuffEngine.Game do
     put_in(
       game,
       [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(:bonus)],
-      game.rules.num_players - game.rules.num_done - 1) # don't know why need -1
+      # don't know why need -1
+      game.rules.num_players - game.rules.num_done - 1
+    )
   end
 
   defp fresh_state(name) do
@@ -298,14 +307,18 @@ defmodule DumenuffEngine.Game do
   defp greet(game) do
     Enum.each(game.rooms, fn {room_name, room} ->
       cond do
-        game.players[room.player1].ethnicity == :bot and game.players[room.player2].ethnicity == :human ->
+        game.players[room.player1].ethnicity == :bot and
+            game.players[room.player2].ethnicity == :human ->
           {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
           Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
 
-        game.players[room.player1].ethnicity == :human and game.players[room.player2].ethnicity == :bot ->
+        game.players[room.player1].ethnicity == :human and
+            game.players[room.player2].ethnicity == :bot ->
           {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
           Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
-        true -> "blah"
+
+        true ->
+          "blah"
       end
     end)
   end
@@ -317,5 +330,4 @@ defmodule DumenuffEngine.Game do
       guess != opponent_ethnicity -> -1
     end
   end
-
 end

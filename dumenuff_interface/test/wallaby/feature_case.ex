@@ -1,5 +1,4 @@
 defmodule DumenuffInterface.FeatureCase do
-
   use ExUnit.CaseTemplate
 
   using do
@@ -14,5 +13,4 @@ defmodule DumenuffInterface.FeatureCase do
     {:ok, session: session}
     IO.inspect(session)
   end
-
 end

@@ -50,9 +50,10 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   # when: only send the reply to the right human
   def handle_info(
-    {:bot_reply, room_name, %{from: from} = human_message},
-    %{assigns: %{player_token: player_token}} = socket)
-  when player_token == from do
+        {:bot_reply, room_name, %{from: from} = human_message},
+        %{assigns: %{player_token: player_token}} = socket
+      )
+      when player_token == from do
     {:ok, reply} = NodeJS.call("index", [human_message.content])
 
     charCount = String.length(reply)
@@ -69,8 +70,9 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info(
-    {:bot_reply_delay, room_name, bot_message},
-    %{assigns: %{game_pid: game_pid}} = socket) do
+        {:bot_reply_delay, room_name, bot_message},
+        %{assigns: %{game_pid: game_pid}} = socket
+      ) do
     {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
     {:noreply, assign(socket, :game, game_state)}
   end
@@ -138,5 +140,4 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     {:noreply, assign(socket, :game, game_state)}
   end
-
 end

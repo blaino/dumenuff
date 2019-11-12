@@ -14,7 +14,8 @@ defmodule DumenuffInterfaceWeb.ScoresLiveView do
           {:ok, game_state} = Game.get_state(game_pid)
           {game_pid, game_state}
 
-        nil -> :error
+        nil ->
+          :error
       end
 
     socket =

@@ -73,7 +73,9 @@ defmodule DumenuffEngine.Game do
     {:ok, rules} = Rules.check(state_data.rules, :time_change)
     state_data = update_rules(state_data, rules)
 
-    if state_data.rules.state != :game_over do
+    if state_data.rules.state == :game_over do
+      Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:game_over})
+    else
       Process.send_after(self(), :time_change, 1000)
     end
 

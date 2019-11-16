@@ -48,6 +48,18 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
+  def handle_info(
+        {:game_over},
+        %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
+      ) do
+    {:ok, game_state} = Game.get_state(game_pid)
+
+    {:noreply,
+     socket
+     |> assign(:game, game_state)
+     |> redirect(to: "/scores", replace: true)}
+  end
+
   # when: only send the reply to the right human
   def handle_info(
         {:bot_reply, room_name, %{from: from} = human_message},
@@ -102,7 +114,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply,
      socket
      |> assign(:game, game_state)
-     |> put_flash(:info, "You're done!")
      |> redirect(to: "/scores", replace: true)}
   end
 

@@ -75,10 +75,9 @@ defmodule DumenuffEngine.Game do
 
     if state_data.rules.state != :game_over do
       Process.send_after(self(), :time_change, 1000)
+      # Publish game state every second
+      Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:tick, state_data})
     end
-
-    # Publish game state every second
-    Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:tick, state_data})
 
     {:noreply, state_data, @timeout}
   end

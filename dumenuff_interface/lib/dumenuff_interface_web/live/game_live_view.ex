@@ -99,9 +99,11 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
       ) do
     {:ok, game_state} = Game.done(game_pid, player_token)
 
-    socket = assign(socket, :game, game_state)
-
-    {:noreply, socket}
+    {:noreply,
+     socket
+     |> assign(:game, game_state)
+     |> put_flash(:info, "You're done!")
+     |> redirect(to: "/scores", replace: true)}
   end
 
   def handle_event("pick", %{"room" => room}, socket) do

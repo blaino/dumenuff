@@ -1,16 +1,18 @@
-<h5>Game Name: <%= @game.registered_name %></h5>
-<ul>
-  <%= for {name, player} <- @game.players do %>
-    <li style="border: 1px solid red">
-      <h6><%= name %></h6>
-      <ul>
-        <%= for {opponent, score} <- player.scores do %>
-          <li style="margin-left: 3em">
-            <span><%= opponent %></span>
-            <span><%= score %></span>
-          </li>
+<%= if @game_pid != nil do %>
+    <h5>Game Name: <%= @game.registered_name %></h5>
+    <ul>
+        <%= for {name, player} <- @game.players do %>
+            <li style="border: 1px solid red">
+                <h6><%= name %></h6>
+                <ul>
+                    <%= for {opponent, score} <- player.scores do %>
+                        <li style="margin-left: 3em">
+                            <span><%= opponent %></span>
+                            <span><%= score %></span>
+                        </li>
+                    <% end %>
+                </ul>
+            </li>
         <% end %>
-      </ul>
-    </li>
-  <% end %>
-</ul>
+    </ul>
+<% end %>

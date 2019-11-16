@@ -23,6 +23,14 @@ defmodule DumenuffInterfaceWeb.ScoresLiveView do
       |> assign(:game, game_state)
       |> assign(:game_pid, game_pid)
 
+    Phoenix.PubSub.subscribe(:dumenuff, "dumenuff_updates")
+
     {:ok, socket}
   end
+
+  def handle_info({:tick, game_state}, socket) do
+    socket = assign(socket, :game, game_state)
+    {:noreply, socket}
+  end
+
 end

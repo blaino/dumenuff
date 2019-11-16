@@ -1,5 +1,5 @@
 <%= if @game_pid != nil do %>
-    <h5>Game Name: <%= @game.registered_name %></h5>
+    <h5>This game will be over in less than <%= @game.rules.timer %> seconds</h5>
     <ul>
         <%= for {name, player} <- @game.players do %>
             <li style="border: 1px solid red">

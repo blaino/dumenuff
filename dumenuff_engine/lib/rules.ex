@@ -36,6 +36,10 @@ defmodule DumenuffEngine.Rules do
     end
   end
 
+  def check(%Rules{state: :game_over} = rules, :time_change) do
+    {:ok, rules}
+  end
+
   def check(_state, _action), do: :error
 
   defp all_players_set?(rules), do: rules.num_players == rules.players_to_start

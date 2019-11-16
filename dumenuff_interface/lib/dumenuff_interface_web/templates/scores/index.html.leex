@@ -1,5 +1,10 @@
 <%= if @game_pid != nil do %>
-    <h5>This game will be over in less than <%= @game.rules.timer %> seconds</h5>
+    <%= if @game.rules.state == :game_started do %>
+        <h5>This game will be over in less than <%= @game.rules.timer %> seconds</h5>
+    <% end %>
+    <%= if @game.rules.state == :game_over do %>
+        <h5>Game Over</h5>
+    <% end %>
     <ul>
         <%= for {name, player} <- @game.players do %>
             <li style="border: 1px solid red">

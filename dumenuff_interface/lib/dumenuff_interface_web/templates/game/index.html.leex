@@ -1,4 +1,3 @@
-<div><%= @player_token %></div>
 <%= if @player_token == nil && @game.rules.state == :initialized do %>
     <h4>Wanna play?</h4>
     <p>Enter your gamer name</p>
@@ -12,6 +11,7 @@
 <% end %>
 <%= if @player_token == nil && @game.rules.state == :game_started do %>
     <h5>Sorry, the game has already started</h5>
+    <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
     <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
 <% end  %>
 <%= if @player_token != nil && @game.rules.state != :game_started do %>
@@ -20,6 +20,7 @@
 <% end  %>
 <%= if @game.rules.state == :game_started do %>
     <div>
+        <div><%= @player_token %></div>
         <h5>Game Name: <%= @game.registered_name %></h5>
         <h5>Timer: <%= @game.rules.timer %></h5>
     </div>

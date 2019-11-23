@@ -8,6 +8,7 @@ defmodule DumenuffInterfaceWeb.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_flash
+    plug DumenuffInterfaceWeb.Plugs.Lobby
     plug Phoenix.LiveView.Flash
     # plug :put_layout, {DumenuffInterfaceWeb.LayoutView, :app}
   end
@@ -19,12 +20,12 @@ defmodule DumenuffInterfaceWeb.Router do
   scope "/", DumenuffInterfaceWeb do
     pipe_through :browser
 
-    get "/", WelcomeController, :index
+    get "/", LobbyController, :new
+    resources "/lobby", LobbyController, only: [:new, :create, :delete]
+
+    resources "/game", GameController, only: [:new, :create, :show], param: "name"
+
     get "/scores", ScoresController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", DumenuffInterfaceWeb do
-  #   pipe_through :api
-  # end
 end

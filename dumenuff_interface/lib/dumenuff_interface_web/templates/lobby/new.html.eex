@@ -1,0 +1,15 @@
+<div>
+    <h4>Wanna play?</h4>
+    <div class="form">
+        <%= form_for @conn, Routes.lobby_path(@conn, :create), [as: :player], fn f -> %>
+        <div class="input-group">
+            <%= text_input f, :name, placeholder: "gamer name", autofocus: true, class: "form-control" %>
+
+            <span class="input-group-btn">
+                <%= submit "Enter", class: "btn btn-primary" %>
+            </span>
+        </div>
+        <% end %>
+        <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
+    </div>
+</div>

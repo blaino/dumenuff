@@ -3,7 +3,7 @@ defmodule DumenuffEngine.Rules do
 
   defstruct state: :initialized,
             num_players: 0,
-            players_to_start: 2,
+            players_to_start: 1,
             num_done: 0,
             timer: 1000
 

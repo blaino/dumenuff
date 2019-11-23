@@ -1,24 +1,4 @@
-<%= if @player_token == nil && @game.rules.state == :initialized do %>
-    <h4>Wanna play?</h4>
-    <p>Enter your gamer name</p>
-    <p>
-        <form action="#" phx-submit="add">
-            <%= text_input :params, :name, placeholder: "gamer name" %>
-            <%= submit "Add", phx_disable_with: "Adding..." %>
-        </form>
-    </p>
-    <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
-<% end %>
-<%= if @player_token == nil && @game.rules.state == :game_started do %>
-    <h5>Sorry, the game has already started</h5>
-    <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
-    <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
-<% end  %>
-<%= if @player_token != nil && @game.rules.state != :game_started do %>
-    <p>Waiting for other players</p>
-    <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
-<% end  %>
-<%= if @game.rules.state == :game_started do %>
+<%= if @game != nil && @game.rules.state == :game_started do %>
     <div>
         <div><%= @player_token %></div>
         <h5>Game Name: <%= @game.registered_name %></h5>

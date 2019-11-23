@@ -3,7 +3,7 @@ defmodule DumenuffEngine.Rules do
 
   defstruct state: :initialized,
             num_players: 0,
-            players_to_start: 1,
+            players_to_start: 2,
             num_done: 0,
             timer: 1000
 
@@ -12,9 +12,15 @@ defmodule DumenuffEngine.Rules do
   def check(%Rules{state: :initialized} = rules, :add_player) do
     rules = Map.update!(rules, :num_players, &(&1 + 1))
 
+    IO.inspect(rules, label: "rules / check / rules: ")
+
     case all_players_set?(rules) do
-      true -> {:ok, %Rules{rules | state: :players_set}}
-      false -> {:ok, rules}
+      true ->
+        IO.puts("all_players_set TRUE")
+        {:ok, %Rules{rules | state: :players_set}}
+      false ->
+        IO.puts("all_players_set FALSE")
+        {:ok, rules}
     end
   end
 

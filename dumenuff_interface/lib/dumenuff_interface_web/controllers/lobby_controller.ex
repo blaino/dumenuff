@@ -14,7 +14,7 @@ defmodule DumenuffInterfaceWeb.LobbyController do
     player = Map.get(player_params, "name", "Anonymous")
     conn
     |> set_player(player)
-    |> redirect(to: Routes.game_path(conn, :new))
+    |> redirect(to: Routes.game_path(conn, :show, "placeholder"))
   end
 
   defp set_player(conn, player) do

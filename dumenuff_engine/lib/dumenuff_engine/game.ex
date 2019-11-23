@@ -28,6 +28,7 @@ defmodule DumenuffEngine.Game do
   end
 
   def add_player(game, name, ethnicity) when is_binary(name) and ethnicity in @ethnicities do
+    IO.inspect(name, label: "game / add_player / name: ")
     GenServer.call(game, {:add_player, name, ethnicity})
   end
 
@@ -58,7 +59,7 @@ defmodule DumenuffEngine.Game do
 
   def terminate(_reason, _state), do: :ok
 
-  def handle_info({:set_state, name}, state_data) do
+  def handle_info({:set_state, name}, _state_data) do
     state_data =
       case :ets.lookup(:game_state, name) do
         [] -> fresh_state(name)
@@ -90,14 +91,18 @@ defmodule DumenuffEngine.Game do
   end
 
   def handle_call({:add_player, name, ethnicity}, _from, state_data) do
+    IO.inspect(name, label: "game / handle_call / :add_player / name: ")
     with {:ok, rules} <- Rules.check(state_data.rules, :add_player) do
+      IO.puts("successfully added player")
       state_data
       |> put_in_player(Player.new(ethnicity), name)
       |> update_rules(rules)
       |> check_players_set
       |> reply_success(:ok)
     else
-      :error -> {:reply, :error, state_data}
+      :error ->
+        IO.puts("failed to add player")
+        {:reply, :error, state_data}
     end
   end
 
@@ -152,12 +157,11 @@ defmodule DumenuffEngine.Game do
   defp check_players_set(game) do
     case game.rules.state == :players_set do
       true ->
-        game =
-          game
-          |> init_bots
-          |> init_rooms
-          |> init_decisions
-          |> start_game
+        game
+        |> init_bots
+        |> init_rooms
+        |> init_decisions
+        |> start_game
 
       false ->
         game

@@ -5,53 +5,80 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   @pubsub_name :dumenuff
 
-  def render(assigns) do
+  def render(%{game: _game, error: nil} = assigns) do
     Phoenix.View.render(DumenuffInterfaceWeb.GameView, "show.html", assigns)
   end
 
+  def render(%{error: _error} = assigns) do
+    ~L"""
+    <section class="game">
+      <div data-error class="alert alert-info">
+        <%= @error %>
+      </div>
+    </section>
+    """
+  end
+
+  def render(%{game: nil} = assigns) do
+    ~L"""
+    <section class="game">
+      <div class="msg">
+        Connecting...
+      </div>
+    </section>
+    """
+  end
+
+
   def mount(session, socket) do
-    if connected?(socket), do: join_player(session)
+    IO.puts("live / mount")
+    game_state = nil
+    game_pid = nil
+
+    if connected?(socket) do
+      {game_pid, _game_state} = find_or_create_game(session)
+      send(self(), {:add_player, game_pid, session.current_player})
+    end
+
+    IO.inspect(game_state, label: "live / mount / game_state")
 
      {:ok, assign(socket,
-         game: nil,
-         game_pid: nil, # tic tac doesn't have this
+         game: game_state,
+         game_pid: game_pid, # tic tac doesn't have this
          game_name: session.game_name,
          player_token: session.current_player, # was player in tic tac
          current_room: nil,
-         message: nil
+         message: nil,
+         error: nil
      )}
   end
 
-  defp join_player(%{game_name: game_name, current_player: current_player}) do
+  defp find_or_create_game(%{game_name: game_name}) do
     Phoenix.PubSub.subscribe(@pubsub_name, "dumenuff_updates")
 
-    # tic tac: this is a function call to engine: find_or_create
-    {game_pid, game_state} =
-      case Enum.at(Supervisor.which_children(GameSupervisor), 0) do
-        {_, game_pid, _, _} ->
-          {:ok, game_state} = Game.get_state(game_pid)
-          {game_pid, game_state}
+    # TODO: don't need to return game_state
+    case Enum.at(Supervisor.which_children(GameSupervisor), 0) do
+      {_, game_pid, _, _} ->
+        IO.inspect(game_pid, label: "live / found game: ")
+        {:ok, game_state} = Game.get_state(game_pid)
+        {game_pid, game_state}
 
-        nil ->
-          {:ok, game_pid} = GameSupervisor.start_game(game_name)
-          {:ok, game_state} = Game.get_state(game_pid)
-          {game_pid, game_state}
-      end
-
-    IO.inspect(game_state, label: "game_state in join_player before add_player")
-
-    # tic tac: error handling on game creation
-
-    # tic tac: no pid
-    Phoenix.PubSub.broadcast(@pubsub_name, "dumenuff_updates", {:new_player, game_state, game_pid, current_player})
+      nil ->
+        {:ok, game_pid} = GameSupervisor.start_game("placeholder")
+        IO.inspect(game_pid, label: "live / created game: ")
+        {:ok, game_state} = Game.get_state(game_pid)
+        {game_pid, game_state}
+    end
   end
 
-  def handle_info({:new_player, game, game_pid, current_player}, socket) do
-
+  def handle_info({:add_player, game_pid, current_player}, socket) do
     case Game.add_player(game_pid, current_player, :human) do
       {:ok, game_state} ->
-        {:noreply, assign(socket, game: game, game_pid: game_pid, error: nil)}
-      {:error, game_state} -> IO.inspect(game_state, "error adding player. game_state: ")
+        IO.puts("live / handle_info / :add_player / success")
+        {:noreply, assign(socket, game: game_state, game_pid: game_pid)}
+      :error ->
+        IO.puts("live / handle_info / :add_player / fail")
+        {:noreply, socket}
     end
   end
 
@@ -65,7 +92,8 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
         %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
       ) do
 
-    IO.inspect(socket, label: "socket in :game_started handler")
+    IO.inspect(player_token, label: "live / handle_info / :game_started / player_token: ")
+    IO.inspect(game_pid, label: "live / handle_info / :game_started / game_pid: ")
 
     {:ok, game_state} = Game.get_state(game_pid)
     rooms = DumenuffInterfaceWeb.GameView.get_rooms(game_state, player_token)
@@ -75,7 +103,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   def handle_info(
         {:game_over},
-        %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
+        %{assigns: %{game_pid: game_pid}} = socket
       ) do
     {:ok, game_state} = Game.get_state(game_pid)
 

@@ -4,7 +4,10 @@ defmodule DumenuffInterfaceWeb.GameController do
   import Phoenix.LiveView.Controller, only: [live_render: 3]
 
   def show(conn, %{"name" => name}) do
-    session = %{game_name: name, current_player: conn.assigns.current_player}
+    IO.inspect(conn, label: "game_controller / show / conn: ")
+    session = %{game_name: name,
+                current_player: conn.assigns.current_player,
+                game_pid: conn.assigns.game_pid}
     live_render(conn, DumenuffInterfaceWeb.GameLiveView, session: session)
   end
 

@@ -32,43 +32,24 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   def mount(session, socket) do
     IO.puts("live / mount")
-    game_state = nil
-    game_pid = nil
+    IO.inspect(session, label: "live / mount / session: ")
 
     if connected?(socket) do
-      {game_pid, _game_state} = find_or_create_game(session)
-      send(self(), {:add_player, game_pid, session.current_player})
+      Phoenix.PubSub.subscribe(@pubsub_name, "dumenuff_updates")
+      send(self(), {:add_player, session.game_pid, session.current_player})
     end
 
-    IO.inspect(game_state, label: "live / mount / game_state")
+    IO.inspect(session.game_pid, label: "live / mount / session.game_pid")
 
      {:ok, assign(socket,
-         game: game_state,
-         game_pid: game_pid, # tic tac doesn't have this
+         game: nil,
+         game_pid: session.game_pid, # tic tac doesn't have this
          game_name: session.game_name,
          player_token: session.current_player, # was player in tic tac
          current_room: nil,
          message: nil,
          error: nil
      )}
-  end
-
-  defp find_or_create_game(%{game_name: game_name}) do
-    Phoenix.PubSub.subscribe(@pubsub_name, "dumenuff_updates")
-
-    # TODO: don't need to return game_state
-    case Enum.at(Supervisor.which_children(GameSupervisor), 0) do
-      {_, game_pid, _, _} ->
-        IO.inspect(game_pid, label: "live / found game: ")
-        {:ok, game_state} = Game.get_state(game_pid)
-        {game_pid, game_state}
-
-      nil ->
-        {:ok, game_pid} = GameSupervisor.start_game("placeholder")
-        IO.inspect(game_pid, label: "live / created game: ")
-        {:ok, game_state} = Game.get_state(game_pid)
-        {game_pid, game_state}
-    end
   end
 
   def handle_info({:add_player, game_pid, current_player}, socket) do

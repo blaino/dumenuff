@@ -30,7 +30,8 @@ defmodule DumenuffEngine.GameSupervisor do
 
   """
   def find_or_create_game() do
-    case Enum.at(Supervisor.which_children(__MODULE__), 0) do
+    # case Enum.at(Supervisor.which_children(__MODULE__), 0) do
+    case available_game() do
       {_, game_pid, _, _} ->
         IO.inspect(game_pid, label: "game_supervisor / found game: ")
         {:ok, game_state} = Game.get_state(game_pid)

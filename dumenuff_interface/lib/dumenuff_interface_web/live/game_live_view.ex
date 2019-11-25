@@ -40,8 +40,9 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     end
 
     IO.inspect(session.game_pid, label: "live / mount / session.game_pid")
+    IO.inspect(session.game_name, label: "live / mount / session.game_name")
 
-     {:ok, assign(socket,
+    {:ok, assign(socket,
          game: nil,
          game_pid: session.game_pid, # tic tac doesn't have this
          game_name: session.game_name,
@@ -53,9 +54,12 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info({:add_player, game_pid, current_player}, socket) do
+    IO.inspect(game_pid, label: "live / handle_info / :add_player / game_pid")
     case Game.add_player(game_pid, current_player, :human) do
       {:ok, game_state} ->
         IO.puts("live / handle_info / :add_player / success")
+        IO.inspect(game_state.rules, label: "live / handle_info / :add_player / game_state.rules")
+        IO.inspect(game_state.registered_name, label: "live / handle_info / :add_player / game_state.registered_name")
         {:noreply, assign(socket, game: game_state, game_pid: game_pid)}
       :error ->
         IO.puts("live / handle_info / :add_player / fail")
@@ -64,6 +68,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info({:tick, game_state}, socket) do
+    IO.inspect(game_state.registered_name, label: "live / handle_info / :tick / game_state.registered_name")
     socket = assign(socket, :game, game_state)
     {:noreply, socket}
   end

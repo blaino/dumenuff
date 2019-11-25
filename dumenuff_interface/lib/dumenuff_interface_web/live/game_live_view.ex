@@ -35,7 +35,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     IO.inspect(session, label: "live / mount / session: ")
 
     if connected?(socket) do
-      Phoenix.PubSub.subscribe(@pubsub_name, "dumenuff_updates")
+      Phoenix.PubSub.subscribe(@pubsub_name, session.game_name)
       send(self(), {:add_player, session.game_pid, session.current_player})
     end
 
@@ -68,7 +68,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info({:tick, game_state}, socket) do
-    IO.inspect(game_state.registered_name, label: "live / handle_info / :tick / game_state.registered_name")
     socket = assign(socket, :game, game_state)
     {:noreply, socket}
   end

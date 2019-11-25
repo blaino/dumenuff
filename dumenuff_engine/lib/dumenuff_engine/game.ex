@@ -6,13 +6,18 @@ defmodule DumenuffEngine.Game do
   @ethnicities [:bot, :human]
   @timeout 60 * 60 * 24 * 1000
   @pubsub_name :dumenuff
-  @pubsub_topic "dumenuff_updates"
 
   ########
   # API
   #
 
   def via_tuple(name), do: {:via, Registry, {Registry.Game, name}}
+
+  def pid_from_name(name) do
+    name
+    |> via_tuple()
+    |> GenServer.whereis()
+  end
 
   def start_link(name) when is_binary(name) do
     GenServer.start_link(__MODULE__, name, name: via_tuple(name))
@@ -75,13 +80,13 @@ defmodule DumenuffEngine.Game do
     state_data = update_rules(state_data, rules)
 
     if state_data.rules.state == :game_over do
-      Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:game_over})
+      Phoenix.PubSub.broadcast(@pubsub_name, state_data.registered_name, {:game_over})
     else
       Process.send_after(self(), :time_change, 1000)
     end
 
     # Publish game state every second
-    Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:tick, state_data})
+    Phoenix.PubSub.broadcast(@pubsub_name, state_data.registered_name, {:tick, state_data})
 
     {:noreply, state_data, @timeout}
   end
@@ -267,7 +272,7 @@ defmodule DumenuffEngine.Game do
 
   defp start_game(game) do
     Process.send_after(self(), :time_change, 1000)
-    Phoenix.PubSub.broadcast(@pubsub_name, @pubsub_topic, {:game_started})
+    Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
     greet(game)
     update_rules(game, %Rules{game.rules | state: :game_started})
   end
@@ -316,12 +321,12 @@ defmodule DumenuffEngine.Game do
         game.players[room.player1].ethnicity == :bot and
             game.players[room.player2].ethnicity == :human ->
           {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
-          Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
+          Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
 
         game.players[room.player1].ethnicity == :human and
             game.players[room.player2].ethnicity == :bot ->
           {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
-          Phoenix.PubSub.broadcast!(@pubsub_name, @pubsub_topic, {:bot_reply, room_name, message})
+          Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
 
         true ->
           "blah"

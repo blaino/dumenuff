@@ -25,7 +25,7 @@ defmodule DumenuffInterfaceWeb.Router do
 
     resources "/game", GameController, only: [:new, :create, :show], param: "name"
 
-    get "/scores", ScoresController, :index
+    resources "/scores", ScoresController, only: [:show], param: "name"
   end
 
 end

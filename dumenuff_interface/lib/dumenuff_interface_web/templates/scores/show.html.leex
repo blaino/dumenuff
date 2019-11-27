@@ -1,4 +1,4 @@
-<%= if @game_pid != nil do %>
+<%= if @game != nil do %>
     <%= if @game.rules.state == :game_started do %>
         <h5>This game will be over in less than <%= @game.rules.timer %> seconds</h5>
     <% end %>

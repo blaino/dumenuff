@@ -8,10 +8,10 @@ defmodule DumenuffInterface.FeatureCase do
     end
   end
 
-  setup tags do
-    {:ok, session} = Wallaby.start_session()
-    {:ok, session: session}
-  end
+  # setup tags do
+  #   {:ok, session} = Wallaby.start_session()
+  #   {:ok, session: session}
+  # end
 end
 
 defmodule DumenuffInterface.UserListTest do
@@ -19,11 +19,40 @@ defmodule DumenuffInterface.UserListTest do
 
   import Wallaby.Query
 
-  test "truth" do
-    assert true
+  # returns a list of session, player_name pairs
+  defp start_sessions(num_sessions) do
+    Enum.map(1..num_sessions, fn index ->
+      {:ok, session} = Wallaby.start_session()
+      # [session: session, name: "player"<>index]
+      {session, "player"<>Integer.to_string(index)}
+    end)
   end
 
-  test "Add two players and start the game", %{session: session} do
+  # N has to be a multiple of players_to_start
+  test "Add N players start through scores" do
+    sessions = start_sessions(20)
+    Enum.each(sessions, fn {session, player} ->
+      session
+      |> visit("/")
+      |> fill_in(css("#player_name"), with: player)
+      |> click(button("Enter"))
+    end)
+
+    Enum.each(sessions, fn {session, _player} ->
+      session
+      |> assert_has(button("DONE"))
+    end)
+
+    Enum.each(sessions, fn {session, player} ->
+      session
+      |> click(button("DONE"))
+      |> assert_has(css(".score-score", count: 4, text: "bonus"))
+      |> assert_has(css(".score-score", count: 3, text: player))
+    end)
+  end
+
+  # @tag :skip
+  test "Add 2 players, start the game, check waiting, scores" do
     {:ok, player1} = Wallaby.start_session()
 
     player1
@@ -44,28 +73,6 @@ defmodule DumenuffInterface.UserListTest do
 
     player2
     |> assert_has(button("DONE"))
-
-    {:ok, player3} = Wallaby.start_session()
-
-    player3
-    |> visit("/")
-    |> fill_in(css("#player_name"), with: "player3")
-    |> click(button("Enter"))
-    |> assert_has(css(".waiting", text: "Waiting"))
-
-    {:ok, player4} = Wallaby.start_session()
-
-    player4
-    |> visit("/")
-    |> fill_in(css("#player_name"), with: "player4")
-    |> click(button("Enter"))
-
-    player3
-    |> assert_has(button("DONE"))
-
-    player4
-    |> assert_has(button("DONE"))
-    |> take_screenshot
 
     player1
     |> click(button("DONE"))

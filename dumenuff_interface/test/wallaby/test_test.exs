@@ -28,7 +28,7 @@ defmodule DumenuffInterface.UserListTest do
 
     player1
     |> visit("/")
-    |> fill_in(css("#player_name"), with: "alice")
+    |> fill_in(css("#player_name"), with: "player1")
     |> click(button("Enter"))
     |> assert_has(css(".waiting", text: "Waiting"))
 
@@ -36,7 +36,7 @@ defmodule DumenuffInterface.UserListTest do
 
     player2
     |> visit("/")
-    |> fill_in(css("#player_name"), with: "bob")
+    |> fill_in(css("#player_name"), with: "player2")
     |> click(button("Enter"))
 
     player1
@@ -49,7 +49,7 @@ defmodule DumenuffInterface.UserListTest do
 
     player3
     |> visit("/")
-    |> fill_in(css("#player_name"), with: "mike")
+    |> fill_in(css("#player_name"), with: "player3")
     |> click(button("Enter"))
     |> assert_has(css(".waiting", text: "Waiting"))
 
@@ -57,7 +57,7 @@ defmodule DumenuffInterface.UserListTest do
 
     player4
     |> visit("/")
-    |> fill_in(css("#player_name"), with: "zrobert")
+    |> fill_in(css("#player_name"), with: "player4")
     |> click(button("Enter"))
 
     player3
@@ -70,10 +70,12 @@ defmodule DumenuffInterface.UserListTest do
     player1
     |> click(button("DONE"))
     |> assert_has(css(".waiting", text: "This game"))
+    |> assert_has(css(".score-score", count: 3, text: "player1"))
 
     player2
     |> click(button("DONE"))
-    |> assert_has(css(".score", count: 4, text: "bonus"))
+    |> assert_has(css(".score-score", count: 4, text: "bonus"))
+    |> assert_has(css(".score-score", count: 3, text: "player2"))
 
   end
 end

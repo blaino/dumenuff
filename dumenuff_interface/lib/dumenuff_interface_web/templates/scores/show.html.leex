@@ -7,11 +7,11 @@
     <% end %>
     <ul>
         <%= for {name, player} <- @game.players do %>
-            <li style="border: 1px solid red">
+            <li class="score-player" style="border: 1px solid red">
                 <h6><%= name %></h6>
                 <ul>
                     <%= for {opponent, score} <- player.scores do %>
-                        <li class="score" style="margin-left: 3em">
+                        <li class="score-score" style="margin-left: 3em">
                             <span><%= opponent %></span>
                             <span><%= score %></span>
                         </li>

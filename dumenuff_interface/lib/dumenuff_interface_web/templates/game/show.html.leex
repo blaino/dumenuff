@@ -11,7 +11,6 @@
     <%= if @game.rules.state == :game_started do %>
         <div>
             <div><%= @player_token %></div>
-            <h5>Game Name: <%= @game.registered_name %></h5>
             <h5>Timer: <%= @game.rules.timer %></h5>
         </div>
 

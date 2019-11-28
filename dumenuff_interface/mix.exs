@@ -43,7 +43,8 @@ defmodule DumenuffInterface.MixProject do
       {:floki, ">= 0.0.0", only: :test},
       {:dumenuff_engine, path: "../dumenuff_engine"},
       {:nodejs, "~> 1.0"},
-      {:wallaby, "~> 0.23.0", [runtime: false, only: :test]}
+      {:wallaby, "~> 0.23.0", [runtime: false, only: :test]},
+      {:distillery, "~> 2.1", runtime: false}
     ]
   end
 end

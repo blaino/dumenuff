@@ -5,7 +5,7 @@
         <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
     <% end  %>
     <%= if @player_token != nil && @game.rules.state != :game_started do %>
-        <p>Waiting for other players</p>
+        <p class="waiting">Waiting for other players</p>
         <img style="width: 60em; height: 50em" src="images/cuteRobot.png" />
     <% end  %>
     <%= if @game.rules.state == :game_started do %>

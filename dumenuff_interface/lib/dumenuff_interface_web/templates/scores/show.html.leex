@@ -1,6 +1,6 @@
 <%= if @game != nil do %>
     <%= if @game.rules.state == :game_started do %>
-        <h5>This game will be over in less than <%= @game.rules.timer %> seconds</h5>
+        <h5 class="waiting" >This game will be over in less than <%= @game.rules.timer %> seconds</h5>
     <% end %>
     <%= if @game.rules.state == :game_over do %>
         <h5>Game Over</h5>
@@ -11,7 +11,7 @@
                 <h6><%= name %></h6>
                 <ul>
                     <%= for {opponent, score} <- player.scores do %>
-                        <li style="margin-left: 3em">
+                        <li class="score" style="margin-left: 3em">
                             <span><%= opponent %></span>
                             <span><%= score %></span>
                         </li>

@@ -17,7 +17,9 @@ config :dumenuff_interface, DumenuffInterfaceWeb.Endpoint,
   server: true, # Without this line, your app will not start the web server!
   secret_key_base: "${SECRET_KEY_BASE}",
   url: [host: "${APP_NAME}.gigalixirapp.com", port: 443],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  # url: [host: "127.0.0.1"],
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  check_origin: false
 
 # Do not print debug messages in production
 config :logger, level: :info

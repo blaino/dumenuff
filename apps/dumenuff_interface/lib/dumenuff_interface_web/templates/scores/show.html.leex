@@ -1,0 +1,27 @@
+<%= if @game != nil do %>
+    <%= if @game.rules.state == :game_started do %>
+        <h5 class="waiting" >This game will be over in less than <%= @game.rules.timer %> seconds</h5>
+    <% end %>
+    <%= if @game.rules.state == :game_over do %>
+    <div style="display: flex">
+      <h5 style="flex: auto">Game Over</h5>
+      <button style="flex: 0 1 20%" class="waves-effect waves-light btn-small" phx-click="new_game">Play again</button>
+    </div>
+    <% end %>
+    <ul>
+        <%= for {name, player} <- sort_by_score(@game.players) do %>
+            <li class="score-players z-depth-1">
+                <h6><%= name %> is really <%= real_name(player) %></h6>
+                <ul>
+                    <%= for {opponent, score} <- player.scores do %>
+                        <li class="score-score" style="margin-left: 3em">
+                            <span><%= opponent %></span>
+                            <span><%= score %></span>
+                        </li>
+                    <% end %>
+                </ul>
+                <div class="total-score"><%= score(player) %></div>
+            </li>
+        <% end %>
+    </ul>
+<% end %>

@@ -1,0 +1,27 @@
+echo "++++++++++++++ pwd before running compile"
+pwd
+
+if [ -f "$assets_dir/yarn.lock" ]; then
+  yarn deploy
+else
+  npm run deploy
+fi
+
+cd $phoenix_dir
+
+mix "${phoenix_ex}.digest"
+
+if mix help "${phoenix_ex}.digest.clean" 1>/dev/null 2>&1; then
+  mix "${phoenix_ex}.digest.clean"
+fi
+
+cd ../..
+echo "++++++++++++++ running install from buildpack compile script"
+cd $bots_node_relative_path
+pwd
+ls *
+npm install
+echo "++++++++++++++ finished npm install in bots"
+
+cd ../..
+cd $phoenix_dir

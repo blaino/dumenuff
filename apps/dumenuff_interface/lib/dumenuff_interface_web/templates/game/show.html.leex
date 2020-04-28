@@ -1,0 +1,64 @@
+<%= if @game != nil do %>
+    <%= if @player_token == nil && @game.rules.state == :game_started do %>
+        <h5>Sorry, the game has already started</h5>
+        <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
+    <% end  %>
+    <%= if @player_token != nil && @game.rules.state != :game_started do %>
+        <p class="waiting">Waiting for other players</p>
+    <% end  %>
+    <%= if @game.rules.state == :game_started do %>
+        <div>
+            <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
+        </div>
+
+        <div class="game-pane">
+            <div class="top-pane z-depth-1">
+                <div class="top-left-pane">
+                    <ul class="room">
+                        <%= for room <- get_rooms(@game, @player_token) do %>
+                            <li>
+                                <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= room_checked(room, @current_room) %> />
+                                <label for="<%= room %>"><%= room %></label>
+                            </li>
+                        <% end %>
+                    </ul>
+                </div>
+                <div class="top-right-pane">
+                    <%=for message <- messages(@game, @player_token, @current_room) do %>
+                        <p>
+                            <%= message.from %>: <%= message.content %>
+                        </p>
+                    <% end %>
+                    <div class="form-group">
+                      <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
+                        <%= text_input :message, :content, placeholder: "write your message here...", autocomplete: "off", class: "form-control blue-grey-text text-lighten-5" %>
+                        <%= hidden_input :message, :from, value: @player_token  %>
+                        <%= hidden_input :message, :to, value: @current_room  %>
+                      <% end %>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-pane">
+              <div class="bottom-left-pane">
+                    <button class="waves-effect waves-light btn-large red done-button" phx-click="done">DONE</button>
+                </div>
+                <div class="bottom-right-pane">
+                    <ul class="decide">
+                        <li>
+                            <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bot" <%= decision_checked(@game, @player_token, @current_room, :bot) %> />
+                            <label for="bot">bot</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="undecided" name="amount" phx-click="decide" phx-value-decision="undecided" <%= decision_checked(@game, @player_token, @current_room, :undecided) %> />
+                            <label for="undecided">idk</label>
+                        </li>
+                        <li>
+                            <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="human" <%= decision_checked(@game, @player_token, @current_room, :human) %> />
+                            <label for="human">human</label>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    <% end %>
+<% end %>

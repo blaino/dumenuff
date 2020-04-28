@@ -1,0 +1,177 @@
+/* This file is for your main application css. */
+
+/* @import "./phoenix.css"; */
+/* @import "../../deps/phoenix_live_view/assets/css/live_view.css"; */
+
+body {
+    font-family: "Courier New", Courier, monospace
+}
+
+input {
+    font-family: "Courier New", Courier, monospace
+}
+
+.game-pane {
+    display: flex;
+    flex-direction: column;
+}
+
+.top-pane {
+    flex: auto;
+
+    display: flex;
+    min-height: 25em;
+    max-height: 30em;
+}
+
+.bottom-pane {
+    flex: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap-reverse;
+}
+
+.top-left-pane {
+    flex: 0 1 auto;
+    width: 10em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-right-pane {
+    flex: auto;
+    padding: 1em;
+}
+
+.bottom-left-pane {
+    flex: 1 1 auto;
+    width: 10em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bottom-right-pane {
+    flex: 1 1 70%;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.decide {
+    list-style-type:none;
+    padding:0;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.decide li {
+    float: left;
+    /* margin: 0 5px 0 0; */
+    min-width: 100px;
+    height: 40px;
+    position: relative;
+}
+
+.decide label, .decide input {
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
+
+.decide input[type="radio"] {
+    opacity:0.011;
+    z-index:100;
+}
+
+.decide input[type="radio"]:checked + label {
+    background: blue;
+}
+
+.decide label {
+    padding:5px;
+    border:1px solid #CCC;
+    cursor:pointer;
+    z-index:90;
+    font-size: medium;
+    text-align: center;
+}
+
+.decide label:hover {
+    background:#DDD;
+}
+
+.done-button {
+    flex: 1 1 auto;
+}
+
+.room {
+    list-style-type:none;
+    margin:25px 0 0 0;
+    padding:0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    flex: 0 0 auto;
+    height: 100%;
+}
+
+.room li {
+    float:left;
+    width:100px;
+    height:40px;
+    position:relative;
+    margin-top: 0.3em;
+
+    flex: 0 0 auto;
+}
+
+.room label, .room input {
+    display:block;
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+}
+
+.room input[type="radio"] {
+    opacity:0.011;
+    z-index:100;
+}
+
+.room input[type="radio"]:checked + label {
+    background: blue;
+}
+
+.room label {
+    padding:5px;
+    border:1px solid #CCC;
+    cursor:pointer;
+    z-index:90;
+    font-size: medium;
+    text-align: center;
+}
+
+.room label:hover {
+    background:#DDD;
+}
+
+.score-players {
+    position: relative;
+    margin: 1em;
+    padding: 0.1em 0.5em;
+}
+
+.total-score {
+    position: absolute;
+    right: 1rem;
+    top: 0.5rem;
+    font-size: 30px;
+}

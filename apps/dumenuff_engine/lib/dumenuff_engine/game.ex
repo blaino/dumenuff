@@ -146,10 +146,31 @@ defmodule DumenuffEngine.Game do
     bot_list = Map.keys(game.bots)
 
     matchups =
-      Map.new(combos, fn x -> {Enum.join(x, "_"), Matchup.new(List.first(x), List.last(x))} end)
-      |> Enum.reject(fn {_key, matchup} -> bot_on_bot?(matchup, bot_list) end)
+      Enum.map(combos, fn combo -> Matchup.new(List.first(combo), List.last(combo)) end)
+      |> Enum.reject(fn matchup -> bot_on_bot?(matchup, bot_list) end)
 
     put_in(game.matchups, matchups)
+  end
+
+  def init_rounds(game) do
+    gen_round(game.matchups, [])
+  end
+
+  def gen_round([matchup | tail], round) do
+    gen_round(reject_matched(matchup, tail), [matchup|round])
+  end
+
+  def gen_round([], round), do: round
+
+  def reject_matched(matchup, tail) do
+    Enum.reject(
+      tail,
+      fn m -> MapSet.size(MapSet.intersection(players(matchup), players(m))) > 0 end)
+  end
+
+  # TODO move to matchup.ex
+  def players(matchup) do
+        MapSet.new([matchup.player1, matchup.player2])
   end
 
   def bot_on_bot?(matchup, bot_list) do

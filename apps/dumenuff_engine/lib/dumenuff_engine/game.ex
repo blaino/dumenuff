@@ -91,7 +91,7 @@ defmodule DumenuffEngine.Game do
       state_data
       |> put_in_player(Player.new(name), name)
       |> update_rules(rules)
-      |> check_players_set
+      |> check_humans_set
       |> reply_success(:ok)
     else
       :error ->
@@ -121,8 +121,8 @@ defmodule DumenuffEngine.Game do
   # Private Helpers
   #
 
-  defp check_players_set(game) do
-    case game.rules.state == :players_set do
+  defp check_humans_set(game) do
+    case game.rules.state == :humans_set do
       true ->
         game
         |> init_bots
@@ -141,7 +141,7 @@ defmodule DumenuffEngine.Game do
   end
 
   def init_matchups(game) do
-    player_list = Map.keys(Map.merge(game.players, game.bots))
+    player_list = Map.keys(Map.merge(game.humans, game.bots))
     combos = Combinations.combinations(player_list, 2)
     bot_list = Map.keys(game.bots)
 
@@ -160,11 +160,11 @@ defmodule DumenuffEngine.Game do
   defp update_score(game, player, decision) do
     opponent = decision.opponent_name
     guess = decision.decision
-    opponent_ethnicity = game.players[opponent].ethnicity
+    opponent_ethnicity = game.humans[opponent].ethnicity
 
     put_in(
       game,
-      [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(opponent)],
+      [Access.key(:humans), Access.key(player), Access.key(:scores), Access.key(opponent)],
       score(guess, opponent_ethnicity)
     )
   end
@@ -177,11 +177,11 @@ defmodule DumenuffEngine.Game do
   end
 
   defp put_in_player(game, player, name) do
-    put_in(game, [Access.key(:players), Access.key(name, %{})], player)
+    put_in(game, [Access.key(:humans), Access.key(name, %{})], player)
   end
 
   defp fresh_state(name) do
-    %{registered_name: name, players: %{}, bots: %{}, matchups: %{}, rules: %Rules{}}
+    %{registered_name: name, humans: %{}, bots: %{}, matchups: %{}, rules: %Rules{}}
   end
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
@@ -197,13 +197,13 @@ defmodule DumenuffEngine.Game do
     Enum.each(game.rooms, fn {room_name, room} ->
       if :rand.uniform > 0.55 do
         cond do
-          game.players[room.player1].ethnicity == :bot and
-          game.players[room.player2].ethnicity == :human ->
+          game.humans[room.player1].ethnicity == :bot and
+          game.humans[room.player2].ethnicity == :human ->
             {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
             Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
 
-            game.players[room.player1].ethnicity == :human and
-          game.players[room.player2].ethnicity == :bot ->
+            game.humans[room.player1].ethnicity == :human and
+          game.humans[room.player2].ethnicity == :bot ->
             {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
             Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
           true ->

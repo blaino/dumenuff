@@ -1,15 +1,10 @@
 defmodule DumenuffEngine.Game do
   use GenServer, start: {__MODULE__, :start_link, []}, restart: :transient
 
-  alias DumenuffEngine.{Player, Decision, Room, Message, Combinations, Rules}
+  alias DumenuffEngine.{Player, Matchup, Combinations, Rules}
 
-  @ethnicities [:bot, :human]
   @timeout 60 * 60 * 24 * 1000
   @pubsub_name :dumenuff
-
-  # @external_resource "priv/foo/bar"
-  @names File.read! "priv/names.txt"
-  def names, do: @names
 
   ########
   # API
@@ -36,29 +31,19 @@ defmodule DumenuffEngine.Game do
     GenServer.call(game, {:get_state})
   end
 
-  def add_player(game, name, ethnicity, real_name) when is_binary(name) and ethnicity in @ethnicities do
+  def add_player(game, name) when is_binary(name) do
     IO.inspect(name, label: "game / add_player / name: ")
-    GenServer.call(game, {:add_player, name, ethnicity, real_name})
+    GenServer.call(game, {:add_player, name})
   end
 
-  # TODO consider checking if room_name is in game.rooms
-  # TODO protect against message with from to not matching those in room
-  def post(game, room_name, %Message{} = message) when is_binary(room_name) do
-    GenServer.call(game, {:post, room_name, message})
-  end
-
-  # TODO protect against decision not matching players
-  def decide(game, player_name, %Decision{} = decision) when is_binary(player_name) do
-    GenServer.call(game, {:decide, player_name, decision})
-  end
-
-  def done(game, player_name) when is_binary(player_name) do
-    GenServer.call(game, {:done, player_name})
+  def decide(game, name, decision) do
+    GenServer.call(game, {:decide, name, decision})
   end
 
   ########
   # Handlers
   #
+
   def terminate({:shutdown, :timeout}, state_data) do
     :ets.delete(:game_state, state_data.player1.name)
     :ok
@@ -99,12 +84,12 @@ defmodule DumenuffEngine.Game do
     reply_success(state_data, :ok)
   end
 
-  def handle_call({:add_player, name, ethnicity, real_name}, _from, state_data) do
+  def handle_call({:add_player, name}, _from, state_data) do
     IO.inspect(name, label: "game / handle_call / :add_player / name: ")
     with {:ok, rules} <- Rules.check(state_data.rules, :add_player) do
       IO.puts("successfully added player")
       state_data
-      |> put_in_player(Player.new(ethnicity, real_name), name)
+      |> put_in_player(Player.new(name), name)
       |> update_rules(rules)
       |> check_players_set
       |> reply_success(:ok)
@@ -115,29 +100,10 @@ defmodule DumenuffEngine.Game do
     end
   end
 
-  def handle_call({:post, room_name, message}, _from, state_data) do
-    state_data
-    |> update_in_messages(room_name, message)
-    |> reply_success(:ok)
-  end
-
   def handle_call({:decide, player, decision}, _from, state_data) do
     state_data
-    |> update_decision(player, decision)
     |> update_score(player, decision)
     |> reply_success(:ok)
-  end
-
-  def handle_call({:done, player_name}, _from, state_data) do
-    with {:ok, rules} <- Rules.check(state_data.rules, :done) do
-      state_data
-      |> set_done(player_name)
-      |> set_bonus(player_name)
-      |> update_rules(rules)
-      |> reply_success(:ok)
-    else
-      :error -> {:reply, :error, state_data}
-    end
   end
 
   # TODO seems harder than it should be
@@ -155,21 +121,12 @@ defmodule DumenuffEngine.Game do
   # Private Helpers
   #
 
-  def bot_names(n) do
-    names()
-    |> String.split("\n")
-    |> Enum.map(&String.trim/1)
-    |> Enum.take_random(n)
-  end
-
-
   defp check_players_set(game) do
     case game.rules.state == :players_set do
       true ->
         game
         |> init_bots
-        |> init_rooms
-        |> init_decisions
+        |> init_matchups
         |> start_game
 
       false ->
@@ -177,91 +134,29 @@ defmodule DumenuffEngine.Game do
     end
   end
 
-  defp init_bots(game) do
-    n_bots = game.rules.players_to_start
-
-    Enum.reduce(
-      bot_names(n_bots),
-      game,
-      fn name, acc -> put_in_player(acc, Player.new(:bot), name) end
-    )
+  def init_bots(game) do
+    bot_list = ["bot1", "bot2"]
+    bots = Map.new(bot_list, fn x -> {x, Player.new(x)} end)
+    put_in(game.bots, bots)
   end
 
-  defp init_rooms(game) do
-    # TODO filter out bot on bot pairs
-    player_list = Map.keys(game.players)
+  def init_matchups(game) do
+    player_list = Map.keys(Map.merge(game.players, game.bots))
     combos = Combinations.combinations(player_list, 2)
+    bot_list = Map.keys(game.bots)
 
-    rooms =
-      Map.new(combos, fn x -> {Enum.join(x, "_"), Room.new(List.first(x), List.last(x))} end)
+    matchups =
+      Map.new(combos, fn x -> {Enum.join(x, "_"), Matchup.new(List.first(x), List.last(x))} end)
+      |> Enum.reject(fn {_key, matchup} -> bot_on_bot?(matchup, bot_list) end)
 
-    put_in(game.rooms, rooms)
+    put_in(game.matchups, matchups)
   end
 
-  defp init_decisions(game) do
-    player_list = Map.keys(game.players)
-    combos = Combinations.combinations(player_list, 2)
-
-    Enum.reduce(combos, game, fn combo, game ->
-      player1 = Enum.at(combo, 0)
-      player2 = Enum.at(combo, 1)
-
-      game
-      |> init_decision(player1, player2)
-      |> init_decision(player2, player1)
-      |> init_score(player1, player2)
-      |> init_score(player2, player1)
-      |> init_bonus
-    end)
+  def bot_on_bot?(matchup, bot_list) do
+    Enum.member?(bot_list, matchup.player1) && Enum.member?(bot_list, matchup.player2)
   end
 
-  defp init_decision(game, player, opponent) do
-    {:ok, decision} = Decision.new(player, :undecided)
-    put_in_decision(game, opponent, decision)
-  end
-
-  defp put_in_decision(game, player, decision) do
-    opponent = decision.opponent_name
-    decision = decision.decision
-
-    update_in(
-      game,
-      [Access.key(:players), Access.key(player), Access.key(:decisions)],
-      &Map.put_new(&1, opponent, decision)
-    )
-  end
-
-  defp init_score(game, player, opponent) do
-    update_in(
-      game,
-      [Access.key(:players), Access.key(player), Access.key(:scores)],
-      &Map.put_new(&1, opponent, 0)
-    )
-  end
-
-  defp init_bonus(game) do
-    player_list = Map.keys(game.players)
-
-    Enum.reduce(player_list, game, fn player, game ->
-      update_in(
-        game,
-        [Access.key(:players), Access.key(player), Access.key(:scores)],
-        &Map.put_new(&1, :bonus, 0)
-      )
-    end)
-  end
-
-  defp update_decision(game, player, decision) do
-    opponent = decision.opponent_name
-    decision = decision.decision
-
-    put_in(
-      game,
-      [Access.key(:players), Access.key(player), Access.key(:decisions), Access.key(opponent)],
-      decision
-    )
-  end
-
+  # TODO
   defp update_score(game, player, decision) do
     opponent = decision.opponent_name
     guess = decision.decision
@@ -277,7 +172,7 @@ defmodule DumenuffEngine.Game do
   defp start_game(game) do
     Process.send_after(self(), :time_change, 1000)
     Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
-    greet(game)
+    # greet(game)
     update_rules(game, %Rules{game.rules | state: :game_started})
   end
 
@@ -285,31 +180,8 @@ defmodule DumenuffEngine.Game do
     put_in(game, [Access.key(:players), Access.key(name, %{})], player)
   end
 
-  defp update_in_messages(game, room, message) do
-    update_in(
-      game,
-      [Access.key(:rooms), Access.key(room), Access.key(:messages)],
-      &[message | &1]
-    )
-  end
-
-  defp set_done(game, player) do
-    put_in(game, [Access.key(:players), Access.key(player), Access.key(:done)], true)
-  end
-
-  defp set_bonus(game, player) do
-    put_in(
-      game,
-      [Access.key(:players), Access.key(player), Access.key(:scores), Access.key(:bonus)],
-      # don't know why need -1
-      #game.rules.num_players - game.rules.num_done - 1
-
-      0
-    )
-  end
-
   defp fresh_state(name) do
-    %{registered_name: name, players: %{}, rooms: %{}, rules: %Rules{}}
+    %{registered_name: name, players: %{}, bots: %{}, matchups: %{}, rules: %Rules{}}
   end
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}
@@ -341,6 +213,7 @@ defmodule DumenuffEngine.Game do
     end)
   end
 
+  # TODO
   defp score(guess, opponent_ethnicity) do
     cond do
       guess == :undecided -> 0

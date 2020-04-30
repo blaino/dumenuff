@@ -126,7 +126,7 @@ defmodule DumenuffEngine.Game do
       true ->
         game
         |> init_bots
-        |> init_matchups
+        |> init_rounds
         |> start_game
 
       false ->
@@ -140,20 +140,19 @@ defmodule DumenuffEngine.Game do
     put_in(game.bots, bots)
   end
 
-  def init_matchups(game) do
+  def init_rounds(game) do
+    matchups = gen_matchups(game)
+    rounds = gen_rounds(matchups, [])
+    put_in(game.rounds, rounds)
+  end
+
+  def gen_matchups(game) do
     player_list = Map.keys(Map.merge(game.humans, game.bots))
     combos = Combinations.combinations(player_list, 2)
     bot_list = Map.keys(game.bots)
 
-    matchups =
-      Enum.map(combos, fn combo -> Matchup.new(List.first(combo), List.last(combo)) end)
-      |> Enum.reject(fn matchup -> bot_on_bot?(matchup, bot_list) end)
-
-    put_in(game.matchups, matchups)
-  end
-
-  def init_rounds(game) do
-    gen_rounds(game.matchups, [])
+    Enum.map(combos, fn combo -> Matchup.new(List.first(combo), List.last(combo)) end)
+    |> Enum.reject(fn matchup -> bot_on_bot?(matchup, bot_list) end)
   end
 
   def gen_rounds([], rounds), do: rounds
@@ -213,7 +212,7 @@ defmodule DumenuffEngine.Game do
   end
 
   defp fresh_state(name) do
-    %{registered_name: name, humans: %{}, bots: %{}, matchups: %{}, rules: %Rules{}}
+    %{registered_name: name, humans: %{}, bots: %{}, rounds: %{}, rules: %Rules{}}
   end
 
   defp update_rules(state_data, rules), do: %{state_data | rules: rules}

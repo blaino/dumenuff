@@ -153,11 +153,22 @@ defmodule DumenuffEngine.Game do
   end
 
   def init_rounds(game) do
-    gen_round(game.matchups, [])
+    gen_rounds(game.matchups, [])
+  end
+
+  def gen_rounds([], rounds), do: rounds
+
+  def gen_rounds(matchups, rounds) do
+    remaining = Enum.reject(matchups, fn m -> Enum.member?(List.flatten(rounds), m) end)
+    if Enum.empty?(remaining) do
+      gen_rounds(remaining, rounds)
+    else
+      gen_rounds(remaining, [gen_round(remaining, []) | rounds])
+    end
   end
 
   def gen_round([matchup | tail], round) do
-    gen_round(reject_matched(matchup, tail), [matchup|round])
+    gen_round(reject_matched(matchup, tail), [matchup | round])
   end
 
   def gen_round([], round), do: round
@@ -170,7 +181,7 @@ defmodule DumenuffEngine.Game do
 
   # TODO move to matchup.ex
   def players(matchup) do
-        MapSet.new([matchup.player1, matchup.player2])
+    MapSet.new([matchup.player1, matchup.player2])
   end
 
   def bot_on_bot?(matchup, bot_list) do

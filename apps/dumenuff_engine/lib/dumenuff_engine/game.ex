@@ -201,10 +201,12 @@ defmodule DumenuffEngine.Game do
   end
 
   defp start_game(game) do
-    Process.send_after(self(), :time_change, 1000)
-    Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
-    # greet(game)
-    update_rules(game, %Rules{game.rules | state: :game_started})
+    with {:ok, rules} <- Rules.check(game.rules, :start_game) do
+      Process.send_after(self(), :time_change, 1000)
+      Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
+      # greet(game)
+      update_rules(game, rules)
+    end
   end
 
   defp put_in_player(game, player, name) do

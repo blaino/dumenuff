@@ -24,6 +24,10 @@ defmodule DumenuffEngine.Rules do
     end
   end
 
+  def check(%Rules{state: :humans_set} = rules, :start_game) do
+    {:ok, %Rules{rules | state: :game_started}}
+  end
+
   def check(%Rules{state: :game_started} = rules, :done) do
     rules = Map.update!(rules, :num_done, &(&1 + 1))
 

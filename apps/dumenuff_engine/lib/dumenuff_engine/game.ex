@@ -91,7 +91,9 @@ defmodule DumenuffEngine.Game do
       state_data
       |> put_in_player(Player.new(name), name)
       |> update_rules(rules)
-      |> check_humans_set
+      |> initialize
+      |> IO.inspect(label: "game / handle_call / :add_player / state_data")
+      |> start_game
       |> reply_success(:ok)
     else
       :error ->
@@ -100,11 +102,24 @@ defmodule DumenuffEngine.Game do
     end
   end
 
-  def handle_call({:decide, player, decision}, _from, state_data) do
-    state_data
-    |> update_score(player, decision)
-    |> reply_success(:ok)
+  def handle_call({:decide, player, decision}, _from, game) do
+    with {:ok, rules} <- Rules.check(game.rules, :decide) do
+      game
+      |> update_score(player, decision)
+      |> update_rules(rules)
+      |> next_round
+      |> reply_success(:ok)
+    else
+      :error ->
+        IO.puts("failed to decide")
+        {:reply, :error, game}
+    end
   end
+
+  # def remove_matchup(game, player) do
+  #   # TODO
+  #   game
+  # end
 
   # TODO seems harder than it should be
   def room_by_players(state_data, p1, p2) do
@@ -121,17 +136,44 @@ defmodule DumenuffEngine.Game do
   # Private Helpers
   #
 
-  defp check_humans_set(game) do
-    case game.rules.state == :humans_set do
-      true ->
-        game
-        |> init_bots
-        |> init_rounds
-        |> start_game
-
-      false ->
-        game
+  defp initialize(game) do
+    with {:ok, rules} <- Rules.check(game.rules, :initialize) do
+      game
+      |> update_rules(rules)
+      |> init_bots
+      |> init_rounds
+      |> IO.inspect(label: "game / initialize / game")
+    else
+      :error -> game
     end
+  end
+
+  defp start_game(game) do
+    IO.inspect(game.rules, label: "game / start_game / rules: ")
+    with {:ok, rules} <- Rules.check(game.rules, :start_game) do
+      Process.send_after(self(), :time_change, 1000)
+      Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
+      # greet(game)
+      update_rules(game, rules)
+    else
+      :error -> game
+    end
+  end
+
+  defp next_round(game) do
+    with {:ok, rules} <- Rules.check(game.rules, :next_round) do
+      game
+      |> update_rules(rules)
+      |> update_rules(matches_in_round(game))
+    else
+      :error -> game
+    end
+  end
+
+  # TODO match on rules and rounds in arguments?
+  def matches_in_round(game) do
+    %Rules{
+      game.rules | matches_in_round: Enum.count(Enum.at(game.rounds, game.rules.current_round))}
   end
 
   def init_bots(game) do
@@ -143,6 +185,8 @@ defmodule DumenuffEngine.Game do
   def init_rounds(game) do
     matchups = gen_matchups(game)
     rounds = gen_rounds(matchups, [])
+
+    game = update_rules(game, %Rules{game.rules | num_rounds: Enum.count(rounds)})
     put_in(game.rounds, rounds)
   end
 
@@ -198,15 +242,6 @@ defmodule DumenuffEngine.Game do
       [Access.key(:humans), Access.key(player), Access.key(:scores), Access.key(opponent)],
       score(guess, opponent_ethnicity)
     )
-  end
-
-  defp start_game(game) do
-    with {:ok, rules} <- Rules.check(game.rules, :start_game) do
-      Process.send_after(self(), :time_change, 1000)
-      Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
-      # greet(game)
-      update_rules(game, rules)
-    end
   end
 
   defp put_in_player(game, player, name) do

@@ -1,18 +1,22 @@
 defmodule DumenuffEngine.Rules do
   alias __MODULE__
 
-  defstruct state: :initialized,
-            num_humans: 0,
-            humans_to_start: 2,
-            num_done: 0,
-            timer: 180
+  defstruct state: :not_initialized,
+    num_humans: 0,
+    humans_to_start: 2,
+    num_done: 0,
+    timer: 180,
+    num_rounds: nil,
+    current_round: -1,
+    matches_in_round: nil
+
 
   def new(), do: %Rules{}
 
-  def check(%Rules{state: :initialized} = rules, :add_player) do
+  def check(%Rules{state: :not_initialized} = rules, :add_player) do
     rules = Map.update!(rules, :num_humans, &(&1 + 1))
 
-    IO.inspect(rules, label: "rules / check / rules: ")
+    IO.inspect(rules, label: "rules / check / :add_player / rules: ")
 
     case all_humans_set?(rules) do
       true ->
@@ -24,18 +28,37 @@ defmodule DumenuffEngine.Rules do
     end
   end
 
-  def check(%Rules{state: :humans_set} = rules, :start_game) do
-    {:ok, %Rules{rules | state: :game_started}}
+  def check(%Rules{state: :humans_set} = rules, :initialize) do
+    IO.inspect(rules, label: "rules / check / :initialize / rules: ")
+    {:ok, %Rules{rules | state: :initialized}}
   end
 
-  def check(%Rules{state: :game_started} = rules, :done) do
-    rules = Map.update!(rules, :num_done, &(&1 + 1))
+  def check(%Rules{state: :initialized} = rules, :start_game) do
+    IO.inspect(rules, label: "rules / check / :start_game / rules: ")
+    rules = Map.update!(rules, :current_round, &(&1 + 1))
 
-    case all_humans_done?(rules) do
-      true -> {:ok, %Rules{rules | state: :game_over}}
-      false -> {:ok, rules}
+    {:ok, %Rules{rules | state: :round_started}}
+  end
+
+  def check(%Rules{state: :round_started} = rules, :decide) do
+    rules = Map.update!(rules, :matches_in_round, &(&1 - 1))
+
+    case matches_remain?(rules) do
+      true -> {:ok, rules}
+      false -> {:ok, %Rules{rules | state: :round_over}}
     end
   end
+
+  def check(%Rules{state: :round_over} = rules, :next_round) do
+    rules = Map.update!(rules, :current_round, &(&1 + 1))
+
+    case rounds_complete?(rules) do
+      true -> {:ok, %Rules{rules | state: :game_over}}
+      false -> {:ok, %Rules{rules | state: :round_started}}
+    end
+  end
+
+
 
   def check(%Rules{state: :game_started} = rules, :time_change) do
     rules = Map.update!(rules, :timer, &(&1 - 1))
@@ -54,5 +77,7 @@ defmodule DumenuffEngine.Rules do
 
   defp all_humans_set?(rules), do: rules.num_humans == rules.humans_to_start
 
-  defp all_humans_done?(rules), do: rules.num_done == rules.num_humans
+  defp matches_remain?(rules), do: rules.matches_in_round > 0
+
+  defp rounds_complete?(rules), do: rules.current_round > rules.num_rounds
 end

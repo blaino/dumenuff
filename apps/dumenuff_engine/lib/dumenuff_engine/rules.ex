@@ -4,12 +4,10 @@ defmodule DumenuffEngine.Rules do
   defstruct state: :not_initialized,
     num_humans: 0,
     humans_to_start: 2,
-    num_done: 0,
     timer: 180,
     num_rounds: nil,
     current_round: -1,
     matches_in_round: nil
-
 
   def new(), do: %Rules{}
 
@@ -59,8 +57,8 @@ defmodule DumenuffEngine.Rules do
   end
 
 
-
-  def check(%Rules{state: :game_started} = rules, :time_change) do
+  # TODO reset when round over
+  def check(%Rules{state: :round_started} = rules, :time_change) do
     rules = Map.update!(rules, :timer, &(&1 - 1))
 
     case rules.timer == 0 do

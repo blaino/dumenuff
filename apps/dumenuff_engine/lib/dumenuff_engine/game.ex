@@ -142,7 +142,6 @@ defmodule DumenuffEngine.Game do
       |> update_rules(rules)
       |> init_bots
       |> init_rounds
-      |> IO.inspect(label: "game / initialize / game")
     else
       :error -> game
     end
@@ -154,7 +153,10 @@ defmodule DumenuffEngine.Game do
       Process.send_after(self(), :time_change, 1000)
       Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
       # greet(game)
-      update_rules(game, rules)
+      game
+      |> update_rules(rules)
+      |> init_match
+
     else
       :error -> game
     end
@@ -186,8 +188,14 @@ defmodule DumenuffEngine.Game do
     matchups = gen_matchups(game)
     rounds = gen_rounds(matchups, [])
 
+    game = put_in(game.rounds, rounds)
     game = update_rules(game, %Rules{game.rules | num_rounds: Enum.count(rounds)})
-    put_in(game.rounds, rounds)
+
+    IO.inspect(game, label: "game / init_rounds / game")
+  end
+
+  def init_match(game) do
+    update_rules(game, matches_in_round(game))
   end
 
   def gen_matchups(game) do

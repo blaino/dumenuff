@@ -36,6 +36,7 @@ defmodule DumenuffEngine.Game do
     GenServer.call(game, {:add_player, name})
   end
 
+  # decide(game, "Blaine", :bots) = Blaine's opponent is a bot
   def decide(game, name, decision) do
     GenServer.call(game, {:decide, name, decision})
   end
@@ -105,14 +106,14 @@ defmodule DumenuffEngine.Game do
   def handle_call({:decide, player, decision}, _from, game) do
     with {:ok, rules} <- Rules.check(game.rules, :decide) do
       game
-      |> update_score(player, decision)
       |> update_rules(rules)
+      |> update_score(player, decision)
       |> next_round
       |> reply_success(:ok)
     else
       :error ->
         IO.puts("failed to decide")
-        {:reply, :error, game}
+      {:reply, :error, game}
     end
   end
 
@@ -239,17 +240,37 @@ defmodule DumenuffEngine.Game do
     Enum.member?(bot_list, matchup.player1) && Enum.member?(bot_list, matchup.player2)
   end
 
-  # TODO
-  defp update_score(game, player, decision) do
-    opponent = decision.opponent_name
-    guess = decision.decision
-    opponent_ethnicity = game.humans[opponent].ethnicity
+  def update_score(game, player, decision) do
+    opponent = find_opponent(game, player)
+    if correct_decision?(game, opponent, decision) do
+      Map.update!(game.humans[player], :score, &(&1 + 1))
+    else
+      Map.update!(game.humans[player], :score, &(&1 - 1))
+    end
+  end
 
-    put_in(
-      game,
-      [Access.key(:humans), Access.key(player), Access.key(:scores), Access.key(opponent)],
-      score(guess, opponent_ethnicity)
-    )
+  def find_opponent(game, player) do
+    match = find_match(game, player)
+    if match.player1 == player do
+      match.player2
+    else
+      match.player1
+    end
+  end
+
+  def correct_decision?(game, opponent, decision) do
+    game
+    |> Map.get(decision)
+    |> Map.keys
+    |> Enum.member?(opponent)
+  end
+
+  def find_match(game, player) do
+    Enum.find(current_round(game), fn m -> m.player1 == player || m.player2 == player end)
+  end
+
+  def current_round(game) do
+    Enum.at(game.rounds, game.rules.current_round)
   end
 
   defp put_in_player(game, player, name) do

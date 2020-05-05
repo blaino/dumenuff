@@ -108,6 +108,7 @@ defmodule DumenuffEngine.Game do
       game
       |> update_rules(rules)
       |> update_score(player, decision)
+      |> IO.inspect(label: "game / handle_call / :decide / update_score / game")
       |> next_round
       |> reply_success(:ok)
     else
@@ -164,8 +165,10 @@ defmodule DumenuffEngine.Game do
   end
 
   defp next_round(game) do
+    IO.inspect(game.rules, label: "game / next_round / rules before check")
     with {:ok, rules} <- Rules.check(game.rules, :next_round) do
       game
+      |> IO.inspect(label: "game / next_round / game")
       |> update_rules(rules)
       |> update_rules(matches_in_round(game))
     else
@@ -240,12 +243,24 @@ defmodule DumenuffEngine.Game do
     Enum.member?(bot_list, matchup.player1) && Enum.member?(bot_list, matchup.player2)
   end
 
+  # Why is this so hard?
   def update_score(game, player, decision) do
+    {_, updated_game} = update_score_helper(game, player, decision)
+    updated_game
+  end
+
+  def update_score_helper(game, player, decision) do
     opponent = find_opponent(game, player)
     if correct_decision?(game, opponent, decision) do
-      Map.update!(game.humans[player], :score, &(&1 + 1))
+      # Map.update!(game.humans[player], :score, &(&1 + 1))
+      get_and_update_in(
+        game,
+        [Access.key!(:humans), Access.key!(player), Access.key!(:score)], fn s -> {s, s + 1} end)
     else
-      Map.update!(game.humans[player], :score, &(&1 - 1))
+      # Map.update!(game.humans[player], :score, &(&1 - 1))
+      get_and_update_in(
+        game,
+        [Access.key!(:humans), Access.key!(player), Access.key!(:score)], fn s -> {s, s - 1} end)
     end
   end
 

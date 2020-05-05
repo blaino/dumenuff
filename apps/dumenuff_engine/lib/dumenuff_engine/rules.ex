@@ -59,6 +59,7 @@ defmodule DumenuffEngine.Rules do
   end
 
 
+
   # TODO reset when round over
   def check(%Rules{state: :round_started} = rules, :time_change) do
     rules = Map.update!(rules, :timer, &(&1 - 1))
@@ -79,5 +80,5 @@ defmodule DumenuffEngine.Rules do
 
   defp matches_remain?(rules), do: rules.matches_in_round > 0
 
-  defp rounds_complete?(rules), do: rules.current_round > rules.num_rounds
+  defp rounds_complete?(rules), do: rules.current_round == rules.num_rounds
 end

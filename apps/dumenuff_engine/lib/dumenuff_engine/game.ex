@@ -165,18 +165,23 @@ defmodule DumenuffEngine.Game do
   end
 
   defp next_round(game) do
-    IO.inspect(game.rules, label: "game / next_round / rules before check")
     with {:ok, rules} <- Rules.check(game.rules, :next_round) do
+      IO.inspect(game.rules, label: "game / next_round / rules after check")
       game = update_rules(game, rules)
-      game = update_rules(game, matches_in_round(game))
-      IO.inspect(game, label: "game / next_round / game after updates")
-      game
+      if game.rules.state == :game_over do
+        game
+      else
+        game = update_rules(game, matches_in_round(game))
+        IO.inspect(game, label: "game / next_round / game after updates")
+        game
+      end
     else
       :error -> game
     end
   end
 
   # TODO match on rules and rounds in arguments?
+  # TODO return a game instead of rules so above can be chained/piped
   def matches_in_round(game) do
     %Rules{
       game.rules | matches_in_round: Enum.count(Enum.at(game.rounds, game.rules.current_round))}

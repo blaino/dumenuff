@@ -49,12 +49,12 @@ defmodule DumenuffEngine.Rules do
   end
 
   def check(%Rules{state: :round_over} = rules, :next_round) do
-    IO.inspect(rules, label: "rules / check / :next_round / rules: ")
-    rules = Map.update!(rules, :current_round, &(&1 + 1))
+    updated_rules = Map.update!(rules, :current_round, &(&1 + 1))
+    IO.inspect(updated_rules, label: "rules / check / :next_round / updated_rules: ")
 
-    case rounds_complete?(rules) do
-      true -> {:ok, %Rules{rules | state: :game_over}}
-      false -> {:ok, %Rules{rules | state: :round_started}}
+    case rounds_complete?(updated_rules) do
+      true -> {:ok, %Rules{updated_rules | state: :game_over}}
+      false -> {:ok, %Rules{updated_rules | state: :round_started}}
     end
   end
 

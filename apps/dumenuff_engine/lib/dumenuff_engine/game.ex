@@ -152,7 +152,7 @@ defmodule DumenuffEngine.Game do
   defp start_game(game) do
     IO.inspect(game.rules, label: "game / start_game / rules: ")
     with {:ok, rules} <- Rules.check(game.rules, :start_game) do
-      Process.send_after(self(), :time_change, 1000)
+      # Process.send_after(self(), :time_change, 1000)
       Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_started})
       # greet(game)
       game
@@ -167,10 +167,10 @@ defmodule DumenuffEngine.Game do
   defp next_round(game) do
     IO.inspect(game.rules, label: "game / next_round / rules before check")
     with {:ok, rules} <- Rules.check(game.rules, :next_round) do
+      game = update_rules(game, rules)
+      game = update_rules(game, matches_in_round(game))
+      IO.inspect(game, label: "game / next_round / game after updates")
       game
-      |> IO.inspect(label: "game / next_round / game")
-      |> update_rules(rules)
-      |> update_rules(matches_in_round(game))
     else
       :error -> game
     end

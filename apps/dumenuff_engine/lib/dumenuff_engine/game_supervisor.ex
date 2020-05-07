@@ -44,7 +44,7 @@ defmodule DumenuffEngine.GameSupervisor do
   def available_game() do
     Enum.find(Supervisor.which_children(__MODULE__), fn {_, pid, _, _} ->
       {:ok, game_state} = Game.get_state(pid)
-      game_state.rules.state == :initialized
+      game_state.rules.state == :not_initialized
     end)
   end
 
@@ -54,7 +54,7 @@ defmodule DumenuffEngine.GameSupervisor do
   def available_game_index() do
     Enum.find_index(Supervisor.which_children(__MODULE__), fn {_, pid, _, _} ->
       {:ok, game_state} = Game.get_state(pid)
-      game_state.rules.state == :initialized
+      game_state.rules.state == :not_initialized
     end)
   end
 

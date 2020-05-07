@@ -36,7 +36,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(@pubsub_name, session.game_name)
-      send(self(), {:add_player, session.game_pid, session.current_player, session.real_name})
+      send(self(), {:add_player, session.game_pid, session.player_name})
     end
 
     IO.inspect(session.game_pid, label: "live / mount / session.game_pid")
@@ -46,16 +46,16 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
          game: nil,
          game_pid: session.game_pid, # tic tac doesn't have this
          game_name: session.game_name,
-         player_token: session.current_player, # was player in tic tac
+         player_token: session.player_name, # was player in tic tac
          current_room: nil,
          message: nil,
          error: nil
      )}
   end
 
-  def handle_info({:add_player, game_pid, current_player, real_name}, socket) do
+  def handle_info({:add_player, game_pid, player_name}, socket) do
     IO.inspect(game_pid, label: "live / handle_info / :add_player / game_pid")
-    case Game.add_player(game_pid, current_player, :human, real_name) do
+    case Game.add_player(game_pid, player_name) do
       {:ok, game_state} ->
         IO.puts("live / handle_info / :add_player / success")
         IO.inspect(game_state.rules, label: "live / handle_info / :add_player / game_state.rules")

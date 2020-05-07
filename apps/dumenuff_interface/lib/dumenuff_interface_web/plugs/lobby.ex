@@ -8,35 +8,21 @@ defmodule DumenuffInterfaceWeb.Plugs.Lobby do
   def call(conn, _options) do
     IO.puts "plugs / lobby / call"
     conn
-    |> assign_current_player
-    |> assign_real_name
+    |> assign_player_name
     |> assign_game_pid
     |> assign_game_name
   end
 
-  defp assign_current_player(conn) do
+  defp assign_player_name(conn) do
     cond do
-      player = conn.assigns[:current_player] ->
-        assign(conn, :current_player, player)
+      player = conn.assigns[:player_name] ->
+        assign(conn, :player_name, player)
 
-      player = get_session(conn, :current_player) ->
-        assign(conn, :current_player, player)
+      player = get_session(conn, :player_name) ->
+        assign(conn, :player_name, player)
 
       true ->
-        assign(conn, :current_player, nil)
-    end
-  end
-
-  defp assign_real_name(conn) do
-    cond do
-      player = conn.assigns[:real_name] ->
-        assign(conn, :real_name, player)
-
-      player = get_session(conn, :real_name) ->
-        assign(conn, :real_name, player)
-
-      true ->
-        assign(conn, :real_name, nil)
+        assign(conn, :player_name, nil)
     end
   end
 

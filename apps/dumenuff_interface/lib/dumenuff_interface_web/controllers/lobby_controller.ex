@@ -8,13 +8,12 @@ defmodule DumenuffInterfaceWeb.LobbyController do
   end
 
   def create(conn, %{"player" => player_params}) do
-    player = Map.get(player_params, "name", "Anonymous")
-    real_name = Map.get(player_params, "real_name", "Anonymous")
+    IO.inspect(player_params, label: "lobby_controller / create / player_params")
+    player_name = Map.get(player_params, "player_name", "Anonymous")
 
     conn =
       conn
-      |> set_player(player)
-      |> set_real_name(real_name)
+      |> set_player_name(player_name)
       |> set_game
       # |> IO.inspect(label: "lobby_controller / create / conn")
 
@@ -26,17 +25,10 @@ defmodule DumenuffInterfaceWeb.LobbyController do
     |> redirect(to: Routes.game_path(conn, :show, game_name))
   end
 
-  defp set_player(conn, player) do
+  defp set_player_name(conn, player_name) do
     conn
-    |> assign(:current_player, player)
-    |> put_session(:current_player, player)
-    |> configure_session(renew: true)
-  end
-
-  defp set_real_name(conn, real_name) do
-    conn
-    |> assign(:real_name, real_name)
-    |> put_session(:real_name, real_name)
+    |> assign(:player_name, player_name)
+    |> put_session(:player_name, player_name)
     |> configure_session(renew: true)
   end
 

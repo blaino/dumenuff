@@ -6,8 +6,7 @@ defmodule DumenuffInterfaceWeb.GameController do
   def show(conn, %{"name" => name}) do
     IO.inspect(name, label: "game_controller / show / name: ")
     session = %{game_name: name,
-                current_player: conn.assigns.current_player,
-                real_name: conn.assigns.real_name,
+                player_name: conn.assigns.player_name,
                 game_pid: conn.assigns.game_pid}
     live_render(conn, DumenuffInterfaceWeb.GameLiveView, session: session)
   end

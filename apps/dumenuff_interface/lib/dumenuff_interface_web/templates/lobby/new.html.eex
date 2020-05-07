@@ -4,8 +4,7 @@
       <h4>Wanna play?</h4>
       <%= form_for @conn, Routes.lobby_path(@conn, :create), [as: :player], fn f -> %>
         <div class="input-group">
-          <%= text_input f, :name, placeholder: "game name", autofocus: true, class: "form-control blue-grey-text text-lighten-5", autocomplete: "off" %>
-          <%= text_input f, :real_name, placeholder: "real name (for the scoreboard)", autofocus: true, class: "form-control blue-grey-text text-lighten-5", autocomplete: "off" %>
+          <%= text_input f, :player_name, placeholder: "Your name (for the scoreboard)", autofocus: true, class: "form-control blue-grey-text text-lighten-5", autocomplete: "off" %>
           <span class="input-group-btn">
             <%= submit "Enter", class: "btn btn-primary" %>
           </span>

@@ -77,8 +77,11 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     {:ok, game_state} = Game.get_state(game_pid)
     room = DumenuffInterfaceWeb.GameView.get_room(game_state, player_token)
-    socket = assign(socket, :current_room, room)
-    {:noreply, socket}
+
+    {:noreply,
+      socket
+      |> assign(:game, game_state)
+      |> assign(:current_room, room)}
   end
 
   def handle_info(

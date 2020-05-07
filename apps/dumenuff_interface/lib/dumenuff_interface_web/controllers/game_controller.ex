@@ -5,6 +5,7 @@ defmodule DumenuffInterfaceWeb.GameController do
 
   def show(conn, %{"name" => name}) do
     IO.inspect(name, label: "game_controller / show / name: ")
+    IO.inspect(conn.assigns.player_name, label: "game_controller / show / player_name: ")
     session = %{game_name: name,
                 player_name: conn.assigns.player_name,
                 game_pid: conn.assigns.game_pid}

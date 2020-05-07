@@ -15,6 +15,7 @@
             <div class="top-pane z-depth-1">
                 <div class="top-left-pane">
                   top-left-pane
+                  <%= @player_token %>
                 </div>
                 <div class="top-right-pane">
                     <%=for message <- messages(@game, @player_token, @current_room) do %>

@@ -1,12 +1,12 @@
 <%= if @game != nil do %>
-    <%= if @player_token == nil && @game.rules.state == :game_started do %>
+    <%= if @player_token == nil && @game.rules.state == :round_started do %>
         <h5>Sorry, the game has already started</h5>
         <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
     <% end  %>
-    <%= if @player_token != nil && @game.rules.state != :game_started do %>
+    <%= if @player_token != nil && @game.rules.state != :round_started do %>
         <p class="waiting">Waiting for other players</p>
     <% end  %>
-    <%= if @game.rules.state == :game_started do %>
+    <%= if @game.rules.state == :round_started do %>
         <div>
             <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
         </div>
@@ -14,14 +14,7 @@
         <div class="game-pane">
             <div class="top-pane z-depth-1">
                 <div class="top-left-pane">
-                    <ul class="room">
-                        <%= for room <- get_rooms(@game, @player_token) do %>
-                            <li>
-                                <input type="radio" id="<%= room %>" phx-click="pick" phx-value-room="<%= room %>" <%= room_checked(room, @current_room) %> />
-                                <label for="<%= room %>"><%= room %></label>
-                            </li>
-                        <% end %>
-                    </ul>
+                  top-left-pane
                 </div>
                 <div class="top-right-pane">
                     <%=for message <- messages(@game, @player_token, @current_room) do %>

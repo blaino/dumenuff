@@ -73,16 +73,16 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info(
-        {:game_started},
+        {:round_started},
         %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
       ) do
 
-    IO.inspect(player_token, label: "live / handle_info / :game_started / player_token: ")
-    IO.inspect(game_pid, label: "live / handle_info / :game_started / game_pid: ")
+    IO.inspect(player_token, label: "live / handle_info / :round_started / player_token: ")
+    IO.inspect(game_pid, label: "live / handle_info / :round_started / game_pid: ")
 
     {:ok, game_state} = Game.get_state(game_pid)
-    rooms = DumenuffInterfaceWeb.GameView.get_rooms(game_state, player_token)
-    socket = assign(socket, :current_room, Enum.at(rooms, 0))
+    room = DumenuffInterfaceWeb.GameView.get_room(game_state, player_token)
+    socket = assign(socket, :current_room, room)
     {:noreply, socket}
   end
 
@@ -132,36 +132,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
       ) do
     {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
     {:noreply, assign(socket, :game, game_state)}
-  end
-
-  # def handle_event(
-  #       "add",
-  #       %{"params" => %{"name" => name}},
-  #       %{assigns: %{game_pid: game_pid}} = socket
-  #     ) do
-  #   {:ok, game_state} = Game.add_player(game_pid, name, :human)
-
-  #   socket =
-  #     socket
-  #     |> assign(:game, game_state)
-  #     |> assign(:player_token, name)
-
-  #   {:noreply, socket}
-  # end
-
-  def handle_event(
-        "done",
-        _params,
-        %{assigns: %{player_token: player_token, game_pid: game_pid, game_name: game_name}} = socket
-      ) do
-    {:ok, game_state} = Game.done(game_pid, player_token)
-
-    IO.inspect(game_name, label: "live / handle_event / done / game_name: ")
-
-    {:noreply,
-     socket
-     |> assign(:game, game_state)
-     |> redirect(to: DumenuffInterfaceWeb.Router.Helpers.scores_path(DumenuffInterfaceWeb.Endpoint, :show, game_name))}
   end
 
   def handle_event("pick", %{"room" => room}, socket) do

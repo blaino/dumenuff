@@ -67,11 +67,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     end
   end
 
-  def handle_info({:tick, game_state}, socket) do
-    socket = assign(socket, :game, game_state)
-    {:noreply, socket}
-  end
-
   def handle_info(
         {:round_started},
         %{assigns: %{player_token: player_token, game_pid: game_pid}} = socket
@@ -134,19 +129,14 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, assign(socket, :game, game_state)}
   end
 
-  def handle_event("pick", %{"room" => room}, socket) do
-    socket = assign(socket, :current_room, room)
-    {:noreply, socket}
-  end
-
   def handle_event(
         "decide",
         %{"decision" => decision},
         %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
           socket
       ) do
-    {:ok, decision} = Decision.new(current_room, String.to_existing_atom(decision))
-    {:ok, game_state} = Game.decide(game_pid, player_token, decision)
+    IO.inspect(decision, label: "game_live_view / handle_event / decide / decision")
+    {:ok, game_state} = Game.decide(game_pid, player_token, String.to_atom(decision))
     socket = assign(socket, :game, game_state)
     {:noreply, socket}
   end

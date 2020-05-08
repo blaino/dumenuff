@@ -7,7 +7,7 @@ defmodule DumenuffInterfaceWeb.ScoresController do
 
   def show(conn, %{"name" => name}) do
     IO.inspect(name, label: "scores / controller / show / name: ")
-    IO.inspect(conn.assigns.current_player, label: "scores / controller / show / current_player: ")
+    IO.inspect(conn.assigns, label: "scores / controller / show / conn.assigns: ")
 
     game_pid = Game.pid_from_name(name)
     {:ok, game_state} = Game.get_state(game_pid)

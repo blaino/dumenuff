@@ -169,10 +169,12 @@ defmodule DumenuffEngine.Game do
       IO.inspect(game.rules, label: "game / next_round / rules after check")
       game = update_rules(game, rules)
       if game.rules.state == :game_over do
+        Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:game_over})
         game
       else
         game = update_rules(game, matches_in_round(game))
         IO.inspect(game, label: "game / next_round / game after updates")
+        Phoenix.PubSub.broadcast(@pubsub_name, game.registered_name, {:round_started})
         game
       end
     else

@@ -146,20 +146,17 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   def handle_event(
         "message",
-        %{"message" => message_params},
+        %{"message" => %{"content" => content, "from" => from}},
         %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
           socket
       ) do
-    %{"content" => content, "from" => from, "to" => to} = message_params
-    {:ok, message} = Message.new(from, to, content)
+    {:ok, message} = Message.new(from, content)
 
-    {:ok, game_state} = Game.get_state(game_pid)
-    room_name = Game.room_by_players(game_state, player_token, current_room)
-    {:ok, game_state} = Game.post(game_pid, room_name, message)
+    {:ok, game_state} = Game.post(game_pid, player_token, message)
 
-    if game_state.players[to].ethnicity == :bot do
-      send(self(), {:bot_reply, room_name, message})
-    end
+    # if game_state.players[to].ethnicity == :bot do
+    #   send(self(), {:bot_reply, room_name, message})
+    # end
 
     {:noreply, assign(socket, :game, game_state)}
   end

@@ -36,6 +36,10 @@ defmodule DumenuffEngine.Game do
     GenServer.call(game, {:add_player, name})
   end
 
+  def post(game, player, message) do
+    GenServer.call(game, {:post, player, message})
+  end
+
   # decide(game, "Blaine", :bots) = Blaine's opponent is a bot
   def decide(game, name, decision) do
     GenServer.call(game, {:decide, name, decision})
@@ -101,6 +105,12 @@ defmodule DumenuffEngine.Game do
         IO.puts("failed to add player")
         {:reply, :error, state_data}
     end
+  end
+
+  def handle_call({:post, player, message}, _from, game) do
+    game
+    |> update_messages(player, message)
+    |> reply_success(:ok)
   end
 
   def handle_call({:decide, player, decision}, _from, game) do
@@ -250,12 +260,12 @@ defmodule DumenuffEngine.Game do
     Enum.member?(bot_list, matchup.player1) && Enum.member?(bot_list, matchup.player2)
   end
 
-  # update the game
+  # messages - update the game
   def update_messages(game, player, message) do
     Map.update!(game, :rounds, fn _ -> update_messages_helper(game, player, message) end)
   end
 
-  # update the round
+  # messages - update the round
   def update_messages_helper(game, player, message) do
     match_index = Enum.find_index(current_round(game),
       fn m -> m.player1 == player || m.player2 == player end)
@@ -264,7 +274,7 @@ defmodule DumenuffEngine.Game do
       fn round -> umh(round, match_index, message) end)
   end
 
-  # update the matchup
+  # messages - update the matchup
   def umh(round, index, message) do
     List.update_at(round, index,
       fn matchup -> %{matchup | messages: [message | matchup.messages]} end )

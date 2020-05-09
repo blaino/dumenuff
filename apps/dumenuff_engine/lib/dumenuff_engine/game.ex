@@ -257,14 +257,17 @@ defmodule DumenuffEngine.Game do
 
   # update the round
   def update_messages_helper(game, player, message) do
-    match_index = Enum.find_index(current_round(game), fn m -> m.player1 == player || m.player2 == player end)
+    match_index = Enum.find_index(current_round(game),
+      fn m -> m.player1 == player || m.player2 == player end)
 
-    List.update_at(game.rounds, game.rules.current_round, fn round -> umh(round, match_index, message) end)
+    List.update_at(game.rounds, game.rules.current_round,
+      fn round -> umh(round, match_index, message) end)
   end
 
   # update the matchup
   def umh(round, index, message) do
-    List.update_at(round, index, fn matchup -> %{matchup | messages: [message | matchup.messages]} end )
+    List.update_at(round, index,
+      fn matchup -> %{matchup | messages: [message | matchup.messages]} end )
   end
 
   # Why is this so hard?

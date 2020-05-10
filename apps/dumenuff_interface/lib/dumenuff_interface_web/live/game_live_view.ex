@@ -85,6 +85,17 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info(
+        {:new_message},
+        %{assigns: %{game_pid: game_pid}} = socket
+      ) do
+    {:ok, game_state} = Game.get_state(game_pid)
+
+    {:noreply,
+     socket
+     |> assign(:game, game_state)}
+  end
+
+  def handle_info(
         {:game_over},
         %{assigns: %{game_pid: game_pid, game_name: game_name}} = socket
       ) do
@@ -147,16 +158,12 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   def handle_event(
         "message",
         %{"message" => %{"content" => content, "from" => from}},
-        %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
+        %{assigns: %{player_token: player_token, game_pid: game_pid}} =
           socket
       ) do
     {:ok, message} = Message.new(from, content)
-
     {:ok, game_state} = Game.post(game_pid, player_token, message)
-
-    # if game_state.players[to].ethnicity == :bot do
-    #   send(self(), {:bot_reply, room_name, message})
-    # end
+    Phoenix.PubSub.broadcast(@pubsub_name, game_state.registered_name, {:new_message})
 
     {:noreply, assign(socket, :game, game_state)}
   end

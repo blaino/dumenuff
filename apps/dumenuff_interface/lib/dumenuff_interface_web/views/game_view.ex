@@ -9,4 +9,9 @@ defmodule DumenuffInterfaceWeb.GameView do
     matchup
   end
 
+  def messages(game, player) do
+    room = get_room(game, player)
+    Enum.reverse(room.messages)
+  end
+
 end

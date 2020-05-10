@@ -18,9 +18,9 @@
                   <%= @player_token %>
                 </div>
                 <div class="top-right-pane">
-                    <%=for message <- get_room(@game, @player_token).messages do %>
+                    <%=for message <- messages(@game, @player_token) do %>
                         <p>
-                            <%= message.content %>
+                           <%= message.from %>: <%= message.content %>
                         </p>
                     <% end %>
                     <div class="form-group">

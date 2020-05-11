@@ -346,37 +346,13 @@ defmodule DumenuffEngine.Game do
     {:reply, {reply, state_data}, state_data}
   end
 
-  defp greet(game) do
-    Enum.each(game.rooms, fn {room_name, room} ->
-      if :rand.uniform > 0.55 do
-        cond do
-          game.humans[room.player1].ethnicity == :bot and
-          game.humans[room.player2].ethnicity == :human ->
-            {:ok, message} = Message.new(room.player2, room.player1, "xxxgreetingxxx")
-            Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
-
-            game.humans[room.player1].ethnicity == :human and
-          game.humans[room.player2].ethnicity == :bot ->
-            {:ok, message} = Message.new(room.player1, room.player2, "xxxgreetingxxx")
-            Phoenix.PubSub.broadcast!(@pubsub_name, game.registered_name, {:bot_reply, room_name, message})
-          true ->
-            "blah"
-        end
-      end
-    end)
-  end
-
-  # TODO
-  defp score(guess, opponent_ethnicity) do
-    cond do
-      guess == :undecided -> 0
-      guess == opponent_ethnicity -> 1
-      guess != opponent_ethnicity -> -1
-    end
-  end
-
   def bot_in_room?(game, room) do
     bot_names = Map.keys(game.bots)
     Enum.member?(bot_names, room.player1) || Enum.member?(bot_names, room.player2)
+    cond do
+      Enum.member?(bot_names, room.player1) -> room.player1
+      Enum.member?(bot_names, room.player2) -> room.player2
+      true -> false
+    end
   end
 end

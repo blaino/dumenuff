@@ -77,6 +77,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     {:ok, game_state} = Game.get_state(game_pid)
     room = DumenuffInterfaceWeb.GameView.get_room(game_state, player_token)
+    greet(game_state, room)
 
     {:noreply,
       socket
@@ -112,7 +113,8 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   # when: only send the reply to the right human
   def handle_info(
     {:bot_reply, current_room, %{from: from} = human_message},
-    %{assigns: %{player_token: player_token}} = socket) when player_token == from do
+    # %{assigns: %{player_token: player_token}} = socket) when player_token == from do
+    %{assigns: %{player_token: player_token}} = socket) do
     {:ok, reply} = NodeJS.call("index", [human_message.content])
 
     IO.inspect(reply, label: "live / handle_info / :bot_reply / NodeJs / reply")
@@ -131,6 +133,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info({:bot_reply, _current_room, _human_message}, socket) do
+    IO.puts(":bot_reply did not match")
     {:noreply, socket}
   end
 
@@ -170,5 +173,16 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     end
 
     {:noreply, assign(socket, :game, game_state)}
+  end
+
+  def greet(game, current_room) do
+    bot = Game.bot_in_room?(game, current_room)
+    ran = :rand.uniform > 0
+
+    if bot && ran do
+      {:ok, message} = Message.new(bot, "xxxgreetingxxx")
+      IO.inspect(message, label: "game_live_view / greet / message")
+      send(self(), {:bot_reply, current_room, message})
+    end
   end
 end

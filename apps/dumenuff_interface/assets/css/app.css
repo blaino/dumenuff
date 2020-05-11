@@ -24,36 +24,12 @@ input {
     max-height: 30em;
 }
 
-.bottom-pane {
-    flex: auto;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap-reverse;
-}
-
-.top-left-pane {
-    flex: 0 1 auto;
-    width: 10em;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .top-right-pane {
     flex: auto;
     padding: 1em;
 }
 
-.bottom-left-pane {
-    flex: 1 1 auto;
-    width: 10em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.bottom-right-pane {
+.button-pane {
     flex: 1 1 70%;
     flex-direction: row;
     justify-content: center;

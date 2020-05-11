@@ -1,53 +1,46 @@
 <%= if @game != nil do %>
-    <%= if @player_token == nil && @game.rules.state == :round_started do %>
-        <h5>Sorry, the game has already started</h5>
-        <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
-    <% end  %>
-    <%= if @player_token != nil && @game.rules.state != :round_started do %>
-        <p class="waiting">Waiting for other players</p>
-    <% end  %>
-    <%= if @game.rules.state == :round_started do %>
-        <div>
-            <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
-        </div>
+  <%= if @player_token == nil && @game.rules.state == :round_started do %>
+    <h5>Sorry, the game has already started</h5>
+    <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
+  <% end  %>
+  <%= if @player_token != nil && @game.rules.state != :round_started do %>
+    <p class="waiting">Waiting for other players</p>
+  <% end  %>
+  <%= if @game.rules.state == :round_started do %>
+    <div>
+      <%= @player_token %>
+      <h5 class="left-align">Timer: <%= @game.rules.timer %></h5>
+      <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
+    </div>
 
-        <div class="game-pane">
-            <div class="top-pane z-depth-1">
-                <div class="top-left-pane">
-                  top-left-pane
-                  <%= @player_token %>
-                </div>
-                <div class="top-right-pane">
-                    <%=for message <- messages(@game, @player_token) do %>
-                        <p>
-                           <%= message.from %>: <%= message.content %>
-                        </p>
-                    <% end %>
-                    <div class="form-group">
-                      <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
-                        <%= text_input :message, :content, placeholder: "write your message here...", autocomplete: "off", class: "form-control blue-grey-text text-lighten-5" %>
-                        <%= hidden_input :message, :from, value: @player_token  %>
-                      <% end %>
-                    </div>
-                </div>
-            </div>
-            <div class="bottom-pane">
-              <div class="bottom-left-pane">
-                bottom-left-pane
-              </div>
-              <div class="bottom-right-pane">
-                    <ul class="decide">
-                        <li>
-                            <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bots" />
-                            <label for="bot">bot</label>
-                        </li>
-                        <li>
-                            <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="humans" />
-                            <label for="human">human</label>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+    <div class="game-pane">
+      <div class="top-pane z-depth-1">
+        <div class="top-right-pane">
+          <%=for message <- messages(@game, @player_token) do %>
+            <p>
+              <%= message.from %>: <%= message.content %>
+            </p>
+          <% end %>
+          <div class="form-group">
+            <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
+              <%= text_input :message, :content, placeholder: "write your message here...", autocomplete: "off", class: "form-control blue-grey-text text-lighten-5" %>
+              <%= hidden_input :message, :from, value: @player_token  %>
+            <% end %>
+          </div>
         </div>
-    <% end %>
+      </div>
+      <div class="button-pane">
+        <ul class="decide">
+          <li>
+            <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bots" />
+            <label for="bot">bot</label>
+          </li>
+          <li>
+            <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="humans" />
+            <label for="human">human</label>
+          </li>
+        </ul>
+      </div>
+    </div>
+  <% end %>
 <% end %>

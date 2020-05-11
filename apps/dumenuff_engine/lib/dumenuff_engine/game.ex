@@ -303,6 +303,10 @@ defmodule DumenuffEngine.Game do
 
   def find_opponent(game, player) do
     match = find_match(game, player)
+    find_opponent_from_match(match, player)
+  end
+
+  def find_opponent_from_match(match, player) do
     if match.player1 == player do
       match.player2
     else
@@ -369,5 +373,10 @@ defmodule DumenuffEngine.Game do
       guess == opponent_ethnicity -> 1
       guess != opponent_ethnicity -> -1
     end
+  end
+
+  def bot_in_room?(game, room) do
+    bot_names = Map.keys(game.bots)
+    Enum.member?(bot_names, room.player1) || Enum.member?(bot_names, room.player2)
   end
 end

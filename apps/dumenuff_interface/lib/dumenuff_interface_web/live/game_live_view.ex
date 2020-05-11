@@ -111,35 +111,35 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   # when: only send the reply to the right human
   def handle_info(
-        {:bot_reply, room_name, %{from: from} = human_message},
-        %{assigns: %{player_token: player_token}} = socket
-      )
-      when player_token == from do
+    {:bot_reply, current_room, %{from: from} = human_message},
+    %{assigns: %{player_token: player_token}} = socket) when player_token == from do
     {:ok, reply} = NodeJS.call("index", [human_message.content])
 
     IO.inspect(reply, label: "live / handle_info / :bot_reply / NodeJs / reply")
 
     charCount = String.length(reply)
-
     num_players_proxy = 10
-
     delay = 120 * charCount + (:rand.uniform(3000) * num_players_proxy)
-    {:ok, bot_message} = Message.new(human_message.to, human_message.from, reply)
 
-    Process.send_after(self(), {:bot_reply_delay, room_name, bot_message}, delay)
+    bot = Game.find_opponent_from_match(current_room, player_token)
+
+    {:ok, bot_message} = Message.new(bot, reply)
+
+    Process.send_after(self(), {:bot_reply_delay, bot, bot_message}, delay)
 
     {:noreply, socket}
   end
 
-  def handle_info({:bot_reply, _room_name, _human_message}, socket) do
+  def handle_info({:bot_reply, _current_room, _human_message}, socket) do
     {:noreply, socket}
   end
 
+  # TODO new posting regime!
   def handle_info(
-        {:bot_reply_delay, room_name, bot_message},
+        {:bot_reply_delay, bot, bot_message},
         %{assigns: %{game_pid: game_pid}} = socket
       ) do
-    {:ok, game_state} = Game.post(game_pid, room_name, bot_message)
+    {:ok, game_state} = Game.post(game_pid, bot, bot_message)
     {:noreply, assign(socket, :game, game_state)}
   end
 
@@ -158,12 +158,16 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   def handle_event(
         "message",
         %{"message" => %{"content" => content, "from" => from}},
-        %{assigns: %{player_token: player_token, game_pid: game_pid}} =
+        %{assigns: %{player_token: player_token, game_pid: game_pid, current_room: current_room}} =
           socket
       ) do
     {:ok, message} = Message.new(from, content)
     {:ok, game_state} = Game.post(game_pid, player_token, message)
     Phoenix.PubSub.broadcast(@pubsub_name, game_state.registered_name, {:new_message})
+
+    if Game.bot_in_room?(game_state, current_room) do
+      send(self(), {:bot_reply, current_room, message})
+    end
 
     {:noreply, assign(socket, :game, game_state)}
   end

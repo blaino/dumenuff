@@ -60,15 +60,6 @@ input {
     bottom:0;
 }
 
-.decide input[type="radio"] {
-    opacity:0.011;
-    z-index:100;
-}
-
-.decide input[type="radio"]:checked + label {
-    background: blue;
-}
-
 .decide label {
     padding:5px;
     border:1px solid #CCC;
@@ -80,10 +71,6 @@ input {
 
 .decide label:hover {
     background:#DDD;
-}
-
-.done-button {
-    flex: 1 1 auto;
 }
 
 .room {

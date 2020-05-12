@@ -32,11 +32,15 @@
       <div class="button-pane">
         <ul class="decide">
           <li>
-            <input type="radio" id="bot" name="amount" phx-click="decide" phx-value-decision="bots" />
+            <input id="bot"
+                   phx-click="decide"
+                   phx-value-decision="bots" />
             <label for="bot">bot</label>
           </li>
           <li>
-            <input type="radio" id="human" name="amount" phx-click="decide" phx-value-decision="humans" />
+            <input id="human"
+                   phx-click="decide"
+                   phx-value-decision="humans" />
             <label for="human">human</label>
           </li>
         </ul>

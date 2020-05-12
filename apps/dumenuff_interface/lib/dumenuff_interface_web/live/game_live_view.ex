@@ -1,7 +1,7 @@
 defmodule DumenuffInterfaceWeb.GameLiveView do
   use Phoenix.LiveView
 
-  alias DumenuffEngine.{Game, Decision, Message}
+  alias DumenuffEngine.{Game, Decision, Message, Matchup}
 
   @pubsub_name :dumenuff
 
@@ -49,7 +49,8 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
          player_token: session.player_name, # was player in tic tac
          current_room: nil,
          message: nil,
-         error: nil
+         error: nil,
+         notification: nil,
      )}
   end
 
@@ -83,6 +84,27 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
       socket
       |> assign(:game, game_state)
       |> assign(:current_room, room)}
+  end
+
+  def handle_info(
+        {:notify, player, correct?},
+        %{assigns: %{current_room: %Matchup{player1: p1, player2: p2}}} = socket
+      ) when (p1 == player or p2 == player) do
+
+    msg = "Placeholder message for notifying players about score change"
+    Process.send_after(self(), {:notify_clear}, 3000)
+
+    {:noreply,
+      socket
+      |> assign(:notification, msg)}
+  end
+
+  def handle_info({:notify_clear}, socket) do
+    IO.inspect(socket.assigns, label: "game_live_view / :notify_clear / socket.assigns")
+
+    {:noreply,
+      socket
+      |> assign(:notification, nil)}
   end
 
   def handle_info(

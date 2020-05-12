@@ -1,4 +1,4 @@
-<%= /* if @game != nil do %>
+<%= if @game != nil do %>
   <%= if @player_token == nil && @game.rules.state == :round_started do %>
     <h5>Sorry, the game has already started</h5>
     <h5>It'll be over in less than <%= @game.rules.timer %> seconds</h5>
@@ -7,9 +7,9 @@
     <p class="waiting">Waiting for other players</p>
   <% end  %>
   <%= if @notification do %>
-    <h5>
+    <div class="notification-modal">
       <%= @notification %>
-    </h5>
+    </div>
   <% end  %>
   <%= if @game.rules.state == :round_started do %>
     <div>
@@ -52,4 +52,4 @@
       </div>
     </div>
   <% end %>
-<% end %> */
+<% end %>

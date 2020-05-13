@@ -14,4 +14,8 @@ defmodule DumenuffInterfaceWeb.GameView do
     Enum.reverse(room.messages)
   end
 
+  def score(game, player) do
+    game.humans[player].score
+  end
+
 end

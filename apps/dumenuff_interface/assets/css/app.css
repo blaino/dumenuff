@@ -20,28 +20,32 @@ input {
   height: 65%;
 }
 
-.game-pane {
+.score-pane {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
 }
 
-.top-pane {
+.score {
     flex: auto;
-
-    display: flex;
-    min-height: 25em;
-    max-height: 30em;
+    border: 1px solid black;
 }
 
-.top-right-pane {
+.timer {
     flex: auto;
+    border: 1px solid black;
+}
+asdf
+
+.message-pane {
     padding: 1em;
+    border: 1px solid black;
 }
 
 .button-pane {
     flex: 1 1 70%;
     flex-direction: row;
     justify-content: center;
+    border: 1px solid black;
 }
 
 .decide {

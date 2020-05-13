@@ -88,16 +88,34 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   def handle_info(
         {:notify, player, correct?},
-        %{assigns: %{current_room: %Matchup{player1: p1, player2: p2}}} = socket
+        %{assigns: %{player_token: player_token, current_room: %Matchup{player1: p1, player2: p2}}} = socket
       ) when (p1 == player or p2 == player) do
 
-    msg = "Placeholder message for notifying players about score change"
+    msg = notification_message(player_token, player, correct?)
+
     Process.send_after(self(), {:notify_clear}, 3000)
 
     {:noreply,
       socket
       |> assign(:notification, msg)}
   end
+
+  def notification_message(player_token, player, correct?) when player_token == player and correct? do
+    "Right!"
+  end
+
+  def notification_message(player_token, player, correct?) when player_token == player and not correct? do
+    "Wrong!"
+  end
+
+  def notification_message(player_token, player, correct?) when player_token != player and correct? do
+    "Boo. Your opponent thinks you're a human and gets a point"
+  end
+
+  def notification_message(player_token, player, correct?) when player_token != player and not correct? do
+    "Nice. Your opponent thinks you're a bot and loses a point"
+  end
+
 
   def handle_info({:notify_clear}, socket) do
     IO.inspect(socket.assigns, label: "game_live_view / :notify_clear / socket.assigns")

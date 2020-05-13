@@ -40,18 +40,14 @@
     <div class="button-pane">
       <ul class="decide">
         <li>
-          <input id="bot"
-                 type="button"
-                 phx-click="decide"
-                 phx-value-decision="bots" />
-          <label for="bot">bot</label>
+          <button class="btn"
+                  phx-click="decide"
+                  phx-value-decision="bots">bot</button>
         </li>
         <li>
-          <input id="human"
-                 type="button"
-                 phx-click="decide"
-                 phx-value-decision="humans" />
-          <label for="human">human</label>
+          <button class="btn"
+                  phx-click="decide"
+                  phx-value-decision="humans">human</button>
         </li>
       </ul>
     </div>

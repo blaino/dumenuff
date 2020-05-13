@@ -34,7 +34,6 @@ input {
 
 .timer {
     flex: auto;
-    border: 1px solid black;
 }
 asdf
 
@@ -47,7 +46,6 @@ asdf
     flex: 1 1 70%;
     flex-direction: row;
     justify-content: center;
-    border: 1px solid black;
 }
 
 .decide {
@@ -64,28 +62,6 @@ asdf
     min-width: 100px;
     height: 40px;
     position: relative;
-}
-
-.decide label, .decide input {
-    display:block;
-    position:absolute;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-}
-
-.decide label {
-    padding:5px;
-    border:1px solid #CCC;
-    cursor:pointer;
-    z-index:90;
-    font-size: large;
-    text-align: center;
-}
-
-.decide label:hover {
-    background:#DDD;
 }
 
 .room {

@@ -7,7 +7,7 @@
     <p class="waiting">Waiting for other players</p>
   <% end  %>
   <%= if @notification do %>
-    <div class="notification-modal">
+    <div class="notification-modal scale-transition">
       <%= @notification %>
     </div>
   <% end  %>
@@ -41,12 +41,14 @@
       <ul class="decide">
         <li>
           <input id="bot"
+                 type="button"
                  phx-click="decide"
                  phx-value-decision="bots" />
           <label for="bot">bot</label>
         </li>
         <li>
           <input id="human"
+                 type="button"
                  phx-click="decide"
                  phx-value-decision="humans" />
           <label for="human">human</label>

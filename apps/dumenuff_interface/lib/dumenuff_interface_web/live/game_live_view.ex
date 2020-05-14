@@ -4,6 +4,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   alias DumenuffEngine.{Game, Decision, Message, Matchup}
 
   @pubsub_name :dumenuff
+  @notification_delay 3000
 
   def render(%{game: _game, error: nil} = assigns) do
     Phoenix.View.render(DumenuffInterfaceWeb.GameView, "show.html", assigns)
@@ -93,7 +94,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
     notification = notification_message({player_token, player, decision, correct?})
 
-    Process.send_after(self(), {:notify_clear}, 3000)
+    Process.send_after(self(), {:notify_clear}, @notification_delay)
 
     {:noreply,
       socket
@@ -150,15 +151,25 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
 
   def handle_info(
         {:game_over},
-        %{assigns: %{game_pid: game_pid, game_name: game_name}} = socket
+        %{assigns: %{game_pid: game_pid}} = socket
       ) do
     {:ok, game_state} = Game.get_state(game_pid)
 
-    IO.inspect(game_name, label: "live / handle_info / :game_over / game_name: ")
+    Process.send_after(self(), {:game_over_redirect}, @notification_delay)
 
     {:noreply,
      socket
-     |> assign(:game, game_state)
+     |> assign(:game, game_state)}
+  end
+
+  def handle_info(
+    {:game_over_redirect},
+    %{assigns: %{game_name: game_name}} = socket) do
+
+    IO.inspect(game_name, label: "live / handle_info / :game_over_redirect / game_name: ")
+
+    {:noreply,
+     socket
      |> redirect(to: DumenuffInterfaceWeb.Router.Helpers.scores_path(DumenuffInterfaceWeb.Endpoint, :show, game_name))}
   end
 
@@ -188,7 +199,6 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     {:noreply, socket}
   end
 
-  # TODO new posting regime!
   def handle_info(
         {:bot_reply_delay, bot, bot_message},
         %{assigns: %{game_pid: game_pid}} = socket

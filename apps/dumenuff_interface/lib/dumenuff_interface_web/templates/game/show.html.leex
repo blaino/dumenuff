@@ -7,8 +7,9 @@
     <p class="waiting">Waiting for other players</p>
   <% end  %>
   <%= if @notification do %>
-    <div class="notification-modal scale-transition">
-      <%= @notification %>
+    <div class="notification-modal scale-transition z-depth-3">
+      <h1 class="center-align"><%= notification_sum(@notification)%></h1>
+      <h5 class="center-align"><%= notification_msg(@notification)%></h5>
     </div>
   <% end  %>
   <%= if @game.rules.state == :round_started do %>

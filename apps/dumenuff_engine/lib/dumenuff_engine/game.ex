@@ -290,8 +290,10 @@ defmodule DumenuffEngine.Game do
     opponent = find_opponent(game, player)
     correct? = correct_decision?(game, opponent, decision)
 
+    IO.inspect(game, label: "game / update_score_helper / game")
+
     Phoenix.PubSub.broadcast(
-      @pubsub_name, game.registered_name, {:notify, player, correct?})
+      @pubsub_name, game.registered_name, {:notify, {player, decision, correct?}})
 
     if correct? do
       # Map.update!(game.humans[player], :score, &(&1 + 1))

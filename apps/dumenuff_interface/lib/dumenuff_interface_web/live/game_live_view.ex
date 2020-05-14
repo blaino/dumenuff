@@ -87,33 +87,45 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
   end
 
   def handle_info(
-        {:notify, player, correct?},
+        {:notify, {player, decision, correct?}},
         %{assigns: %{player_token: player_token, current_room: %Matchup{player1: p1, player2: p2}}} = socket
       ) when (p1 == player or p2 == player) do
 
-    msg = notification_message(player_token, player, correct?)
+    notification = notification_message({player_token, player, decision, correct?})
 
     Process.send_after(self(), {:notify_clear}, 3000)
 
     {:noreply,
       socket
-      |> assign(:notification, msg)}
+      |> assign(:notification, notification)}
   end
 
-  def notification_message(player_token, player, correct?) when player_token == player and correct? do
-    "Right!"
+  def handle_info({:notify, _}, socket), do: {:noreply, socket}
+
+  def notification_message({player_token, player, :humans, true}) when player_token == player do
+    {"Right!",  "You're opponent is a human. +1"}
   end
 
-  def notification_message(player_token, player, correct?) when player_token == player and not correct? do
-    "Wrong!"
+  def notification_message({player_token, player, :bots, true}) when player_token == player do
+    {"Right!", "You're opponent is a bot. +1"}
   end
 
-  def notification_message(player_token, player, correct?) when player_token != player and correct? do
-    "Boo. Your opponent thinks you're a human and gets a point"
+  def notification_message({player_token, player, :humans, false}) when player_token == player do
+    {"Wrong!", "You're opponent is a bot. -1"}
   end
 
-  def notification_message(player_token, player, correct?) when player_token != player and not correct? do
-    "Nice. Your opponent thinks you're a bot and loses a point"
+  def notification_message({player_token, player, :bots, false}) when player_token == player do
+    {"Wrong!", "You're opponent is a human. -1"}
+  end
+
+  def notification_message({player_token, player, decision, true})
+  when player_token != player do
+    {"Boo.", "Your opponent thinks you're a human and gets a point"}
+  end
+
+  def notification_message({player_token, player, decision, false})
+  when player_token != player do
+    {"Nice.", "Your opponent thinks you're a bot and loses a point"}
   end
 
 

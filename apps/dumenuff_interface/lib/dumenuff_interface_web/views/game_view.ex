@@ -18,4 +18,8 @@ defmodule DumenuffInterfaceWeb.GameView do
     game.humans[player].score
   end
 
+  def notification_sum({sum, _msg} = notification), do: sum
+
+  def notification_msg({_sum, msg} = notification), do: msg
+
 end

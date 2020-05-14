@@ -17,7 +17,7 @@ input {
   left: 50%;
   transform: translate(-50%, -50%);
   background: goldenrod;
-  height: 65%;
+  height: 50%;
   z-index: 100;
   min-width: 50%;
 }

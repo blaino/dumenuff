@@ -12,21 +12,20 @@
       <h5 class="center-align"><%= notification_msg(@notification)%></h5>
     </div>
   <% end  %>
+  <div class="score-pane">
+    <div class="score">
+      <h5 class="left-align">
+        <%= @player_token %>'s score: <%= score(@game, @player_token) %>
+      </h5>
+    </div>
+    <div class="timer">
+      <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
+    </div>
+  </div>
   <%= if @game.rules.state == :round_started do %>
     <%= if done(@game, @player_token) do %>
-      done
+      <p class="waiting">Waiting for other players</p>
     <%= else %>
-      <div class="score-pane">
-        <div class="score">
-          <h5 class="left-align">
-            <%= @player_token %>'s score: <%= score(@game, @player_token) %>
-          </h5>
-        </div>
-        <div class="timer">
-          <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
-        </div>
-      </div>
-
       <div class="message-pane">
         <%=for message <- messages(@game, @player_token) do %>
           <p>

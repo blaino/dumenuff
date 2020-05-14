@@ -172,8 +172,7 @@ defmodule DumenuffInterfaceWeb.GameLiveView do
     IO.inspect(reply, label: "live / handle_info / :bot_reply / NodeJs / reply")
 
     charCount = String.length(reply)
-    num_players_proxy = 10
-    delay = 120 * charCount + (:rand.uniform(3000) * num_players_proxy)
+    delay = 120 * charCount + :rand.uniform(3000)
 
     bot = Game.find_opponent_from_match(current_room, player_token)
 

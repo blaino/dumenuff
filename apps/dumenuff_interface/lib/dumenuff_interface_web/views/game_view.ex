@@ -1,7 +1,7 @@
 defmodule DumenuffInterfaceWeb.GameView do
   use DumenuffInterfaceWeb, :view
 
-  alias DumenuffEngine.{Game, Matchup}
+  alias DumenuffEngine.{Game, Matchup, Message}
 
   def get_room(game, player_token) do
     matchup = Game.find_match(game, player_token)
@@ -30,5 +30,9 @@ defmodule DumenuffInterfaceWeb.GameView do
   def notification_sum({sum, _msg} = notification), do: sum
 
   def notification_msg({_sum, msg} = notification), do: msg
+
+  def opponent_msg?(player_token, %Message{from: from}) when player_token != from, do: true
+
+  def opponent_msg?(player_token, %Message{from: from}) when player_token == from, do: false
 
 end

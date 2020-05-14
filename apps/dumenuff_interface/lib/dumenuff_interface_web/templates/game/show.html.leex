@@ -28,9 +28,19 @@
     <%= else %>
       <div class="message-pane">
         <%=for message <- messages(@game, @player_token) do %>
-          <p>
-            <%= message.from %>: <%= message.content %>
-          </p>
+          <%= if opponent_msg?(@player_token, message) do %>
+            <div class="left-align">
+              <div class="message opponent">
+                <%= message.content %>
+              </div>
+            </div>
+          <%= else %>
+            <div class="right-align">
+              <div class="message self">
+                <%= message.content %>
+              </div>
+            </div>
+          <% end %>
         <% end %>
         <div class="form-group">
           <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>

@@ -42,6 +42,22 @@ asdf
     border: 1px solid black;
 }
 
+.message {
+    display: inline-block;
+    border-radius: 25px;
+    padding: 4px 10px;
+    margin: 3px;
+}
+
+.opponent {
+    background: #b0bec5;
+    color: black;
+}
+
+.self {
+    background: #283593;
+}
+
 .button-pane {
     flex: 1 1 70%;
     flex-direction: row;

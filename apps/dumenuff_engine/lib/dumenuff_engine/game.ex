@@ -118,6 +118,7 @@ defmodule DumenuffEngine.Game do
       game
       |> update_rules(rules)
       |> update_score(player, decision)
+      |> update_status(player)
       |> IO.inspect(label: "game / handle_call / :decide / update_score / game")
       |> next_round
       |> reply_success(:ok)
@@ -306,6 +307,26 @@ defmodule DumenuffEngine.Game do
         game,
         [Access.key!(:humans), Access.key!(player), Access.key!(:score)], fn s -> {s, s - 1} end)
     end
+  end
+
+  # status - update the game
+  def update_status(game, player) do
+    Map.update!(game, :rounds, fn _ -> update_status_helper(game, player) end)
+  end
+
+  # status - update the round
+  def update_status_helper(game, player) do
+    match_index = Enum.find_index(current_round(game),
+      fn m -> m.player1 == player || m.player2 == player end)
+
+    List.update_at(game.rounds, game.rules.current_round,
+      fn round -> ush(round, match_index) end)
+  end
+
+  # status - update the matchup
+  def ush(round, index) do
+    List.update_at(round, index,
+      fn matchup -> %{matchup | status: :done} end )
   end
 
   def find_opponent(game, player) do

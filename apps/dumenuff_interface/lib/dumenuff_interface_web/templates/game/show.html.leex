@@ -13,44 +13,48 @@
     </div>
   <% end  %>
   <%= if @game.rules.state == :round_started do %>
-    <div class="score-pane">
-      <div class="score">
-        <h5 class="left-align">
-          <%= @player_token %>'s score: <%= score(@game, @player_token) %>
-        </h5>
+    <%= if done(@game, @player_token) do %>
+      done
+    <%= else %>
+      <div class="score-pane">
+        <div class="score">
+          <h5 class="left-align">
+            <%= @player_token %>'s score: <%= score(@game, @player_token) %>
+          </h5>
+        </div>
+        <div class="timer">
+          <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
+        </div>
       </div>
-      <div class="timer">
-        <h5 class="right-align">Timer: <%= @game.rules.timer %></h5>
-      </div>
-    </div>
 
-    <div class="message-pane">
-      <%=for message <- messages(@game, @player_token) do %>
-        <p>
-          <%= message.from %>: <%= message.content %>
-        </p>
-      <% end %>
-      <div class="form-group">
-        <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
-          <%= text_input :message, :content, placeholder: "write your message here...", autocomplete: "off", class: "form-control blue-grey-text text-lighten-5" %>
-          <%= hidden_input :message, :from, value: @player_token  %>
+      <div class="message-pane">
+        <%=for message <- messages(@game, @player_token) do %>
+          <p>
+            <%= message.from %>: <%= message.content %>
+          </p>
         <% end %>
+        <div class="form-group">
+          <%= form_for @message, "#", [phx_submit: :message], fn _f -> %>
+            <%= text_input :message, :content, placeholder: "write your message here...", autocomplete: "off", class: "form-control blue-grey-text text-lighten-5" %>
+            <%= hidden_input :message, :from, value: @player_token  %>
+          <% end %>
+        </div>
       </div>
-    </div>
 
-    <div class="button-pane">
-      <ul class="decide">
-        <li>
-          <button class="btn"
-                  phx-click="decide"
-                  phx-value-decision="bots">bot</button>
-        </li>
-        <li>
-          <button class="btn"
-                  phx-click="decide"
-                  phx-value-decision="humans">human</button>
-        </li>
-      </ul>
-    </div>
+      <div class="button-pane">
+        <ul class="decide">
+          <li>
+            <button class="btn"
+                    phx-click="decide"
+                    phx-value-decision="bots">bot</button>
+          </li>
+          <li>
+            <button class="btn"
+                    phx-click="decide"
+                    phx-value-decision="humans">human</button>
+          </li>
+        </ul>
+      </div>
+    <% end %>
   <% end %>
 <% end %>
